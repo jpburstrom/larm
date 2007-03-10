@@ -153,7 +153,7 @@ class Grandel(Machine):
 
         self.windows = []
         for n in range(10):
-            qp = QPixmap(QString(("larm_utilities/wave%d.png") % (n + 1)))
+            qp = QPixmap(QString((sys.path[0]+"/larm_utilities/wave%d.png") % (n + 1)))
             if not qp.isNull():
                 self.windows.append(qp)
             else:
@@ -1101,6 +1101,7 @@ try:
     psyco.bind(Machine.update_canvas)
 except ImportError:
     "Can't import psyco. What do we do?"
+
 
 a = QApplication(sys.argv)
 QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
