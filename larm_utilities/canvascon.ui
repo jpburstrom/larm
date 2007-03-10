@@ -1,0 +1,158 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>Form1</class>
+<comment>Python:#Import the MarioDots module
+Python:from canvas import *</comment>
+<author>Johannes Burström</author>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>Form1</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>632</width>
+            <height>425</height>
+        </rect>
+    </property>
+    <property name="paletteBackgroundColor">
+        <color>
+            <red>100</red>
+            <green>100</green>
+            <blue>100</blue>
+        </color>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>pushButton3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>380</x>
+                <y>380</y>
+                <width>102</width>
+                <height>25</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>pushButton3</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>pushButton1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>160</x>
+                <y>380</y>
+                <width>99</width>
+                <height>25</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>pushButton1</string>
+        </property>
+    </widget>
+    <widget class="MarioDots">
+        <property name="name">
+            <cstring>marioDots2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>40</y>
+                <width>300</width>
+                <height>300</height>
+            </rect>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>150</x>
+                <y>20</y>
+                <width>300</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="paletteForegroundColor">
+            <color>
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+            </color>
+        </property>
+        <property name="paletteBackgroundColor">
+            <color>
+                <red>100</red>
+                <green>100</green>
+                <blue>100</blue>
+            </color>
+        </property>
+        <property name="backgroundOrigin">
+            <enum>WindowOrigin</enum>
+        </property>
+        <property name="font">
+            <font>
+                <family>Futura</family>
+                <pointsize>12</pointsize>
+            </font>
+        </property>
+        <property name="text">
+            <string>textLabel1</string>
+        </property>
+    </widget>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>MarioDots</class>
+        <header location="local"></header>
+        <sizehint>
+            <width>300</width>
+            <height>300</height>
+        </sizehint>
+        <container>0</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image0</pixmap>
+        <signal>newlabel(const QString&amp;)</signal>
+        <slot access="public" specifier="">test()</slot>
+        <slot access="public" specifier="">zoomIn()</slot>
+        <slot access="public" specifier="">move1x(int, int)</slot>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="XPM.GZ" length="91460">789ceddd4d6edb460040e1bd4f21d83ba34864d86d02143d42812c0b145d48b4f823299b365d0445ef5ece9074e4c286f864921147ef2991325e90c497213d92167c7fbbf8edd3af8bdbf7577f7d597da9b24556aefe5cdc3efefdf9f3d7dffff8e59fabebfbe57211fede3d2ceeae7fb8bade2eb2c5cd32168665335cad9be16333ccebc2701586f71fc2230c6fc2f0611d1e61b88ec33c3cc2f05d18fef4101e61b80fc3751e1e6198856196755baec270f3e1c7fcee3e0c7761982f1f97eb7818791c7ebcffd81cd5260ef3d5fd433c8ca219769b7a77b3b29ec5ffc5d5da7a164f8275663dd38ba5174b2f965e2cbd587ab19e793ddaebe9c57ad16bc2993daff462e9c5d28ba5174b2f965e2cbd587ab1f462e9c54ad96b5337f43653f68a60038ba5ecd57cb33a2c58ba5e455e14116cd0ad26eb55c42258fd3ad866d3f5cabb0916e186da6cfa5e855e7deacec761b9d2f5ca46995ee97ad52baffca96cb04545b25e597e0036dcaa355daf4330bd7a542bb50bb001d7f8e97a85f78eed8a75c03791e97ab52b8a5a6cb8ab7dd25eadd8b09b4cda6b84f462e9c5d28ba517eb02bcdacff087f9283f7daff8a547590ef4ddc7857815855e3d2b9bf74501ac7cfbd692f72a8b83de0e96bad733ae01c02ec3ab8c7ff43a9e5e2cbd585ebf5865712056ea75b4b268cfc5d2f5449f1aab3ad75fbd72bd0a6b27d8305c17e0958593b17b7e7317e035687ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c59aabd726dcbf64c0fbdcf76da65ecdfd6807b9e30b6b9e5e35579c5fd383cdd42b7205b0a9f73c4baf8eeb3b80cdd26bf36d7e4d7dc99fa3d7a6fc76fd9a1a6c8e5ecdd48abf1f87b9291a68865ef1767bddfcaa0793ee7c9e5e4577fd2af4ead1a6b96368985d5eef8f575fb9ba5bacd6ff9c76df33f5ca9afbab667af5281ab5572ebd8eb77975307e73f4fa9ee9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f46225e455d58dbe9374bcaa6a0ab064bcaa6a12b054bcaa6a1ab044bcaaedb6d1aa5f47dd511a5e35d42e826d7723cfb084bc627af5a88a5ebbf66954b074bc76bbf649af6355ff6bc45d25e1d54db0f1a757225e75bbb69177938857fd8b51affe354b89d0763bee9e12f2da462ebdfa14bde2cbc83b4ac46bb2f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28ba5174b2f965e2cbd587ab1f462e9c5d28b758ad7a66edca33adf4e9a5f9b285614a31ed979768ad73e56149708c6bd8a5a4aafde5e454cafde5efb6682157a61afd18feefc3af97c0c4fa31fddf975faf5be6eec833bc3b057bdf2da3f35fae19d5d7c7eed0fc06abeb10ff0cc3a61bd7a0076796f8c4ef3eaae607a3dfbe18b85f78ecd8af502b94e995f45db3ed3ebf90f5feb696d7f715c7e5e087bc5cb5e4d2fd60b5e7634bd587ab1f462e9c5d28b75fdefcf57ff017521d9bd</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>pushButton1</sender>
+        <signal>released()</signal>
+        <receiver>marioDots2</receiver>
+        <slot>test()</slot>
+    </connection>
+    <connection>
+        <sender>marioDots2</sender>
+        <signal>newlabel(const QString&amp;)</signal>
+        <receiver>textLabel1</receiver>
+        <slot>setText(const QString&amp;)</slot>
+    </connection>
+</connections>
+<layoutdefaults spacing="6" margin="11"/>
+<includehints>
+    <includehint>mywidget.h</includehint>
+</includehints>
+</UI>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-3.9.dtd">
+<!-- Project file for project soundcanvas -->
+<!-- Saved: 2007-03-09, 20:20:32 -->
+<!-- Copyright (C) 2007 Johannes Burström, johannes@ljud.org -->
+<Project version="3.9">
+  <ProgLanguage mixed="0">Python</ProgLanguage>
+  <UIType>Qt</UIType>
+  <Description></Description>
+  <Version>0.1</Version>
+  <Author>Johannes Burström</Author>
+  <Email>johannes@ljud.org</Email>
+  <Sources>
+    <Source>
+      <Name>sc.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>jmachine.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>jpopuplist.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>canvas.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>canvaslabel.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>mouse.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>larmglobals.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>machine.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>jrouting.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>canvascon.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>jcanvas.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>jsnapbuttons.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>fm.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>saving.py</Name>
+    </Source>
+    <Source>
+      <Name>test3.py</Name>
+    </Source>
+  </Sources>
+  <Forms>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>canvaslabel.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>canvaslabel.ui.h</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>popuplist.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>form2.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>snapbuttons.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>routing.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>machine.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>canvascon.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>fm.ui</Name>
+    </Form>
+    <Form>
+      <Name>test3.ui</Name>
+    </Form>
+    <Form>
+      <Name>test4.ui</Name>
+    </Form>
+    <Form>
+      <Dir>larm_utilities</Dir>
+      <Name>notes.ui</Name>
+    </Form>
+  </Forms>
+  <Translations>
+  </Translations>
+  <Interfaces>
+  </Interfaces>
+  <Others>
+    <Other>
+      <Name>TODO</Name>
+    </Other>
+  </Others>
+  <MainScript>
+    <Name>sc.py</Name>
+  </MainScript>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+  </FiletypeAssociations>
+  <PyLint>
+    <PyLintParams>(dp0
+S'enableImports'
+p1
+I01
+sS'enableMiscellaneous'
+p2
+I01
+sS'enableClasses'
+p3
+I01
+sS'enableFormat'
+p4
+I01
+sS'txtReport'
+p5
+I00
+sS'enableDesign'
+p6
+I01
+sS'dialogReport'
+p7
+I01
+sS'enableMetrics'
+p8
+I01
+sS'enableVariables'
+p9
+I01
+sS'configFile'
+p10
+V/home/johannes/python/sc/lint.cfg
+p11
+sS'htmlReport'
+p12
+I00
+sS'enableBasic'
+p13
+I01
+sS'enableExceptions'
+p14
+I01
+sS'enableSimilarities'
+p15
+I01
+s.</PyLintParams>
+  </PyLint>
+</Project>

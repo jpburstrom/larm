@@ -1,0 +1,1648 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>pm7</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>pm7</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>594</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="paletteForegroundColor">
+        <color>
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+        </color>
+    </property>
+    <property name="paletteBackgroundColor">
+        <color>
+            <red>100</red>
+            <green>100</green>
+            <blue>100</blue>
+        </color>
+    </property>
+    <property name="caption">
+        <string>pm7</string>
+    </property>
+    <property name="iconText">
+        <string></string>
+    </property>
+    <widget class="QTabWidget">
+        <property name="name">
+            <cstring>tabWidget2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>290</width>
+                <height>266</height>
+            </rect>
+        </property>
+        <property name="tabPosition">
+            <enum>Bottom</enum>
+        </property>
+        <property name="tabShape">
+            <enum>Triangular</enum>
+        </property>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>1</string>
+            </attribute>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>slider1_3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>145</y>
+                        <width>200</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>213</x>
+                        <y>148</y>
+                        <width>63</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Length dev</string>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>slider1_2_3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>165</y>
+                        <width>200</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>slider1_2_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>184</y>
+                        <width>200</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QSpinBox">
+                <property name="name">
+                    <cstring>spinBox3_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>169</x>
+                        <y>204</y>
+                        <width>32</width>
+                        <height>18</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>9</number>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2_2_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>213</x>
+                        <y>168</y>
+                        <width>55</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Amp</string>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>slider1_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>107</y>
+                        <width>200</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QSpinBox">
+                <property name="name">
+                    <cstring>spinBox3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>73</x>
+                        <y>204</y>
+                        <width>32</width>
+                        <height>18</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>9</number>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2_2_2_2_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>19</x>
+                        <y>208</y>
+                        <width>55</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Oct min</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>213</x>
+                        <y>128</y>
+                        <width>55</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Length</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>213</x>
+                        <y>109</y>
+                        <width>62</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Speed dev</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2_2_2_2_2_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>114</x>
+                        <y>208</y>
+                        <width>55</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Oct max</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>213</x>
+                        <y>90</y>
+                        <width>55</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Speed</string>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel1_2_2_2_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>213</x>
+                        <y>187</y>
+                        <width>55</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Amp dev</string>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>slider1_2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>126</y>
+                        <width>200</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>slider1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>88</y>
+                        <width>200</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="minValue">
+                    <number>1</number>
+                </property>
+                <property name="maxValue">
+                    <number>1000</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QButtonGroup">
+                <property name="name">
+                    <cstring>wave</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>141</x>
+                        <y>9</y>
+                        <width>84</width>
+                        <height>78</height>
+                    </rect>
+                </property>
+                <property name="frameShape">
+                    <enum>NoFrame</enum>
+                </property>
+                <property name="title">
+                    <string>wave</string>
+                </property>
+                <widget class="QButtonGroup">
+                    <property name="name">
+                        <cstring>wave1</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>5</x>
+                            <y>15</y>
+                            <width>43</width>
+                            <height>57</height>
+                        </rect>
+                    </property>
+                    <property name="frameShape">
+                        <enum>NoFrame</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Plain</enum>
+                    </property>
+                    <property name="title">
+                        <string></string>
+                    </property>
+                    <property name="exclusive">
+                        <bool>true</bool>
+                    </property>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>sin</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>-1</y>
+                                <width>38</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string>sin</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>tri</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>13</y>
+                                <width>43</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string>tri</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>saw</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>27</y>
+                                <width>43</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string>saw</string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>squ</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>41</y>
+                                <width>45</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string>squ</string>
+                        </property>
+                    </widget>
+                </widget>
+                <widget class="QButtonGroup">
+                    <property name="name">
+                        <cstring>wave2</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>48</x>
+                            <y>13</y>
+                            <width>16</width>
+                            <height>60</height>
+                        </rect>
+                    </property>
+                    <property name="frameShape">
+                        <enum>NoFrame</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Plain</enum>
+                    </property>
+                    <property name="title">
+                        <string></string>
+                    </property>
+                    <property name="exclusive">
+                        <bool>true</bool>
+                    </property>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>squ_2</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>44</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>sin_2</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>0</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>tri_2</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>14</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>saw_2</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>2</x>
+                                <y>29</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                </widget>
+                <widget class="QButtonGroup">
+                    <property name="name">
+                        <cstring>wave3</cstring>
+                    </property>
+                    <property name="geometry">
+                        <rect>
+                            <x>67</x>
+                            <y>12</y>
+                            <width>16</width>
+                            <height>61</height>
+                        </rect>
+                    </property>
+                    <property name="frameShape">
+                        <enum>NoFrame</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Plain</enum>
+                    </property>
+                    <property name="title">
+                        <string></string>
+                    </property>
+                    <property name="exclusive">
+                        <bool>true</bool>
+                    </property>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>tri_3</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>0</x>
+                                <y>45</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>saw_3</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>0</x>
+                                <y>30</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>sin_3</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>0</x>
+                                <y>1</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget class="QRadioButton">
+                        <property name="name">
+                            <cstring>squ_3</cstring>
+                        </property>
+                        <property name="geometry">
+                            <rect>
+                                <x>0</x>
+                                <y>15</y>
+                                <width>16</width>
+                                <height>16</height>
+                            </rect>
+                        </property>
+                        <property name="paletteForegroundColor">
+                            <color>
+                                <red>85</red>
+                                <green>255</green>
+                                <blue>0</blue>
+                            </color>
+                        </property>
+                        <property name="paletteBackgroundColor">
+                            <color>
+                                <red>100</red>
+                                <green>100</green>
+                                <blue>100</blue>
+                            </color>
+                        </property>
+                        <property name="focusPolicy">
+                            <enum>NoFocus</enum>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                    </widget>
+                </widget>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o5</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>45</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o8</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>77</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o7</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>69</x>
+                        <y>12</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>21</x>
+                        <y>12</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o9</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>85</x>
+                        <y>12</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o6</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>61</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o11</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>101</x>
+                        <y>12</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o12</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>109</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>29</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o4</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>37</x>
+                        <y>12</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>13</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o10</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>93</x>
+                        <y>26</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o12_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>109</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o4_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>37</x>
+                        <y>47</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o9_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>85</x>
+                        <y>47</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o3_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>29</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o1_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>13</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o6_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>61</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o10_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>93</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o11_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>101</x>
+                        <y>47</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o5_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>45</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o2_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>21</x>
+                        <y>47</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o8_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>77</x>
+                        <y>61</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QRadioButton">
+                <property name="name">
+                    <cstring>o7_2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>69</x>
+                        <y>47</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="paletteForegroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>255</blue>
+                    </color>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>100</red>
+                        <green>100</green>
+                        <blue>100</blue>
+                    </color>
+                </property>
+                <property name="focusPolicy">
+                    <enum>NoFocus</enum>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QWidget">
+            <property name="name">
+                <cstring>tab</cstring>
+            </property>
+            <attribute name="title">
+                <string>2</string>
+            </attribute>
+        </widget>
+    </widget>
+</widget>
+<tabstops>
+</tabstops>
+<layoutdefaults spacing="6" margin="6"/>
+</UI>

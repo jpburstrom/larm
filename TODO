@@ -1,0 +1,236 @@
+TODO:
+canvas less cpu-hungry redraw/move ?
+place to send custom OSC msgs (for debug, recording..)
+
+låtlista, anteckningar (not self-saving)
+
+cpu usage
+timer
+
+*switch audio parent on/off samma som: (första gången dsp on, sedan switch)
+*start audio engine
+*canvas finetune
+*machine select/save snapshot hotkey
+*recorder (buffer)
+*recorder (to disk)
+*canvas onlyX/onlyY (in PollingThread)
+*machine on_off hotkey (space)
+*view parameter number (for exact changes)
+*grandel - tgl freeze
+*piano mode
+*disable autorepeat
+*saving: metod för att känna igen sträng? WONTFIX
+*canvas snap-to-grid? WONTFIX
+
+
+
+
+
+nej:
+    canvasmachine med 2 hotkeys:
+    * samma save/snapshot
+    * samma ui
+    * olika hotkeys (instanser)
+
+
+GUI:
+
+Routing: (1 instance)
+*Select from, to  - change value
+*10 sends: loop 1-4, grandel, deelay, pm7, combo, adc12, adc3
+*disable send to self
+*Init state
+*Save state(s)
+
+mouseloopers: (4 instances)
+*change sample
+*change q amt
+*Init state
+*save state(s)
+*connect to canvas
+
+*select files:
+    *select source file -> destination
+    *indicate when loaded
+    *check if loaded and loading: done by backend
+
+*record to array:
+*    start slot recording
+*    stop slot recording
+*    select recording slot -> destination
+
+*canvas:
+    *5 xy dots
+    *allowing multiple instances
+    *main label
+    *dot labels
+
+
+fm synth:
+    values:
+    pitch coarse/fine 2
+    *oct max/min 2
+    *speed speed/deviation 2
+    *length len/deviation 2
+    *amplitude amp/deviation 2
+    *3 instances:
+        (delay) attack decay sustain release 5 (4)
+        freq
+    *routing 3*3
+    *change wave 0-3 * 3
+    *pan * 3
+    *vol * 3
+    *keyboard
+    Note generation currently in gui part. change to backend?
+*    piano mode
+
+*grandel:
+*    change gran window sel(10)
+*    change value
+*    tgl freeze
+*    connect to canvas (x2? vol?)
+*    Init state
+*    save state
+
+*deelay:
+*    connect to canvas
+*    Init state
+*    save state
+
+*combo
+*connect to canvas x2
+
+*room
+*canvas? perhaps sliders?
+
+
+================================================
+
+OSC prot
+
+/grandel
+    /speed 1.5 1000 25
+    /speeddev 0 100 0
+    
+    /sizedev 0 100 0
+    /size 5 800 300
+    
+    /transpdev 0 12 0
+    /transp -12 12 0
+    
+    /delaydev 0 100 40
+    /delay 0 500 300
+    
+    /pan 0 100 50
+    /pandev 0 100 0
+    
+    /vol 0 100 0
+    /voldev 0 100 10
+    
+    /window1 int(0-9)
+
+/a4loop/no[n]
+    */pan 0 1 0.5
+    */vol 0 1 0.5
+    */pitchdev 0 1 0
+    */pitch -2 2 1
+    */skip 0 1 0
+    */grainlen 10 800 100
+    */offset 0 1 0
+    */size 0 1 1
+    */quantizeamt 0 1 0
+    */quantizestep 1 48 16
+    */qspeed -1 1 0
+    */buffer (symbol) dummyarray
+listen:
+    */sample_loaded (bool)
+
+/rick/[id] (recorder)
+    /onoff (int) 0 1
+    /pong   1          (svarar på att allt är ok)
+    RECIEVE:
+    /array (symbol)
+    /arraylength (samples, int)
+
+/fm
+    /vol 0-100
+    /op[n]
+        /wave int(0-3) 0
+        /relfreq
+    /aenv
+        /op[n]
+            /delay
+            /attack
+            /decay
+            /sustain
+            /release
+    /voice[n]
+        /note (midi)
+    /matrix
+        /op[n]
+            /op[n] 0 100
+defaults:
+/relfreq 1 2 4
+dadsr 0 1 2 50 5 (0-100)
+matrix 0-100
+pan 0-100 (50)
+vol 0-100   
+
+om vi lägger in notbiten i backend:
+/fm
+    /speed (ms/tick) 0.1-100 (50-5000)
+    /speed-dev 0-100 (%)
+    /len 20-5000
+    /lendev
+    /amp 0 - 100
+    /ampdev
+    /oct int (0-9)
+    
+/deelay/no[n]
+    /rtime 0 2000 300
+    /ltime 0 2000 330
+    /rfb 0 99 70
+    /lfb 0 99 70
+    /vol 0 100 70
+    /gapper-prob 0 100 0
+    /gapper-size 5 200 20 
+
+/combo
+    /pitch-[n]
+    /vol-[n]
+    /fbk-[n]
+    /lpf-[n]
+    where n=1-5
+
+/room/no1
+    /liveness 0-99
+    /distance 0-99
+    /slope 0-99
+    /xfreq 0-127
+
+routing:
+/a4loop-1
+    /send0-4 (0-100)
+/a4loop-2
+/a4loop-3
+/a4loop-4
+/grandel-1
+/delay-1 #ändra denna i pd
+/combo-1
+/pm7
+/adc12
+/adc3
+
+/diskrec/path (string)
+/diskrec/rec (bool)
+
+/pd
+    /dsp int(0-1)
+
+===============================
+
+Messages from backend:
+ready
+
+
+    

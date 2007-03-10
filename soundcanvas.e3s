@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Session SYSTEM "Session-3.8.dtd">
+<!-- eric3 session file for project soundcanvas -->
+<!-- This file was generated automatically, do not edit. -->
+<!-- Saved: 2007-03-09, 21:39:44 -->
+<Session version="3.8">
+  <Filenames>
+    <Filename cline="826" cindex="47">/home/johannes/python/sc/sc.py</Filename>
+    <Filename cline="20" cindex="0">/home/johannes/python/sc/larm_utilities/jmachine.py</Filename>
+    <Filename cline="18" cindex="0">/home/johannes/python/sc/larm_utilities/larmglobals.py</Filename>
+    <Filename cline="19" cindex="11">/home/johannes/python/sc/TODO</Filename>
+    <Filename cline="125" cindex="36">/home/johannes/python/sc/larm_utilities/jcanvas.py</Filename>
+    <Filename cline="55" cindex="21">/home/johannes/python/sc/larm_utilities/jpopuplist.py</Filename>
+    <Filename cline="51" cindex="66">/home/johannes/python/sc/larm_utilities/canvaslabel.py</Filename>
+    <Filename cline="223" cindex="4">/home/johannes/python/sc/larm_utilities/fm.py</Filename>
+  </Filenames>
+  <ActiveWindow cline="826" cindex="47">/home/johannes/python/sc/sc.py</ActiveWindow>
+  <Breakpoints>
+    <Breakpoint>
+      <BpFilename>/home/johannes/python/sc/larm_utilities/jpopuplist.py</BpFilename>
+      <Linenumber value="154" />
+      <Condition>None</Condition>
+      <Temporary value="0" />
+      <Enabled value="1" />
+      <Count value="0" />
+    </Breakpoint>
+  </Breakpoints>
+  <Watchpoints>
+  </Watchpoints>
+  <DebugInfo>
+    <CommandLine></CommandLine>
+    <WorkingDirectory></WorkingDirectory>
+    <Environment></Environment>
+    <ReportExceptions value="1" />
+    <Exceptions>
+    </Exceptions>
+    <TracePython value="0" />
+    <CovexcPattern></CovexcPattern>
+  </DebugInfo>
+  <Bookmarks>
+  </Bookmarks>
+</Session>

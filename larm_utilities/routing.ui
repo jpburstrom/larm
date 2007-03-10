@@ -1,0 +1,122 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>Form4</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>Form4</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form4</string>
+    </property>
+    <widget class="QTable">
+        <column>
+            <property name="text">
+                <string>Main</string>
+            </property>
+            <property name="pixmap">
+                <pixmap>image0</pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Gran</string>
+            </property>
+            <property name="pixmap">
+                <pixmap>image1</pixmap>
+            </property>
+        </column>
+        <column>
+            <property name="text">
+                <string>Delay</string>
+            </property>
+            <property name="pixmap">
+                <pixmap>image2</pixmap>
+            </property>
+        </column>
+        <row>
+            <property name="text">
+                <string>Main</string>
+            </property>
+            <property name="pixmap">
+                <pixmap>image0</pixmap>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Gran</string>
+            </property>
+            <property name="pixmap">
+                <pixmap>image1</pixmap>
+            </property>
+        </row>
+        <row>
+            <property name="text">
+                <string>Delay</string>
+            </property>
+            <property name="pixmap">
+                <pixmap>image2</pixmap>
+            </property>
+        </row>
+        <property name="name">
+            <cstring>table1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>560</width>
+                <height>260</height>
+            </rect>
+        </property>
+        <property name="resizePolicy">
+            <enum>Default</enum>
+        </property>
+        <property name="vScrollBarMode">
+            <enum>AlwaysOff</enum>
+        </property>
+        <property name="hScrollBarMode">
+            <enum>AlwaysOn</enum>
+        </property>
+        <property name="numRows">
+            <number>8</number>
+        </property>
+        <property name="numCols">
+            <number>8</number>
+        </property>
+        <property name="showGrid">
+            <bool>true</bool>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+            <enum>NoSelection</enum>
+        </property>
+        <property name="focusStyle">
+            <enum>SpreadSheet</enum>
+        </property>
+    </widget>
+</widget>
+<images>
+    <image name="image0">
+        <data format="PNG" length="272">89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff61000000d749444154388d63cceef8cf800dd45c17419168d17cc3884d1d13319a718961350097425c724c841410328409594272e15b06c9856f716a86c9231bc2846ceaf37861860f173660354472e15b860f1736303c8f174671090b3edb88014cb8fc0db30de62a6ca0e6bac87facd1884d032e43189fc70b130c797c80a545f30d23ba37380be76255fcbd3f1985dfa2f98691113d29b77a6cc4eba2ea1dfe28491a1e06532b18ff4fad6024d93b4c30cd300101830006018300ac8a050c0218d02dc11a0b30c5f8f830000f036ccecfeef8cf882e071383010072a2684a7cae1aa30000000049454e44ae426082</data>
+    </image>
+    <image name="image1">
+        <data format="PNG" length="276">89504e470d0a1a0a0000000d49484452000000100000000f0806000000ed734f2f000000db4944415428917d93b11183300c45bf380aef40c930788094d90006497a7b03ca0c808749991de89406399610d19d1b4bffeb5927d3fc60d84843640a45ddf13e61f96c646b7b7b9147e27c08daa0508091787eb332e9ad58ba7904140ab231e92c812716024ba50cf2487c25b62642aa0c44ec75f957d3017aea57262d1d85823444068e215a6ccfc4ab99011033d7f7d08b4edd3c02befd7647190000d6783948de27e0be6912d9c4344496a4909c0ca4f31aeb56d6214ac2227ae256735aa4e50912417bda5c1bca40b0bc42b9b31faafe059bf04cda5a79c21766298c18d35ad3b20000000049454e44ae426082</data>
+    </image>
+    <image name="image2">
+        <data format="PNG" length="249">89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff61000000c049444154388db592b115c2300c44eff252b00325c3c00029d9c00cc20030453c000c93921de88e026c14c5363cdee3578e74b9b394301c85c469bdcb0f87db8530d47a4c0656909bab2b0040f7ad6f65936ed1316810342c7c6764839496d95fca67a7ed01e0bca13e2559130160a4c2240223f42b18a1ea0e18593c7b9a4bfc86ff19d8a5b616fcfe8c8d393d56db854964e42ca564666b1a0446224c625f4a48025f2b513468bde0e900208de16164759ce75f686ef03299c52651ad0e000f0b2c8cedd84a45840000000049454e44ae426082</data>
+    </image>
+</images>
+<slots>
+    <slot>newSlot()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
