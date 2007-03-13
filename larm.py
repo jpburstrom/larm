@@ -126,7 +126,7 @@ class MouseLooper(Machine):
 class LabelSlider(QHBox):
     def __init__(self, label, parent = None, name = None,fl = 0):
         QHBox.__init__(self, parent, name)
-        self.slider = MySlider(Qt.Horizontal, 
+        self.slider = QSlider(Qt.Horizontal, 
             self, name)
         self.slider.setMinValue(0)
         self.slider.setMaxValue(1000)
@@ -146,7 +146,7 @@ class Grandel(Machine):
         for i in range(3):
             self.state[self.slider_labels[i]] = 0
             slider = LabelSlider(self.slider_labels[i], self.sliderbox, self.slider_labels[i])
-            self.connect(slider.slider, PYSIGNAL("valueChanged"), self.store_and_send)
+            self.connect(slider.slider, SIGNAL("valueChanged(int)"), self.get_sliderdata)
             self.controls.append(slider)
         self.controls[2].slider.setMaxValue(9)
         self.controls[2].slider.setPageStep(1)
@@ -190,7 +190,8 @@ class Grandel(Machine):
             self.freezebtn.setPaletteForegroundColor(QColor(255,0,0))
         else:
             self.freezebtn.setPaletteForegroundColor(QColor(0,0,0))
-            
+    def get_sliderdata(self, int):
+        self.store_and_send(self.sender().name(), int)
         
     
     def generate_label_tuple(self):
@@ -296,7 +297,7 @@ class Combo(Machine):
         for i in range(2):
             self.state[self.slider_labels[i]] = 0
             slider = LabelSlider(self.slider_labels[i], self.sliderbox, self.slider_labels[i])
-            self.connect(slider.slider, PYSIGNAL("valueChanged"), self.store_and_send)
+            self.connect(slider.slider, SIGNAL("valueChanged(int)"), self.get_sliderdata)
             self.controls.append(slider)
 
         
@@ -307,6 +308,9 @@ class Combo(Machine):
         for i in range(2):
             self.controls[i].slider.setValue(self.state[self.slider_labels[i]])
         
+    def get_sliderdata(self, int):
+        self.store_and_send(self.sender().name(), int)
+
     def generate_label_tuple(self):
         self.label_tuple = (self.label, [
         ['Pitch 1', 'Vol 1'],
@@ -458,9 +462,11 @@ class ArrayRecorder(QVBox):
         self.buttongroup.setExclusive(0)
         self.buttongroup.setInsideMargin(2)
         #hardcoded upper limit
-        for i in range(99):
-            qApp.osc.bind(self.handle_incoming, "/rick/no%d/array" % i)
-            qApp.osc.bind(self.handle_incoming, "/rick/no%d/arraysize" % i)
+        reclist = ['pm7', 'grandel', 'a4loop1', 'a4loop2', 'a4loop3',
+				'a4loop4', 'adc3', 'adc12']
+        for i in reclist:
+            qApp.osc.bind(self.handle_incoming, "/rick/%s/array" % i)
+            qApp.osc.bind(self.handle_incoming, "/rick/%s/arraysize" % i)
             
         self.connect(self.buttongroup, SIGNAL("clicked(int)"), 
             self.toggle_rec)
@@ -479,6 +485,7 @@ class ArrayRecorder(QVBox):
             self.add_button(add[2])
             osc.sendMsg("".join(("/rick/", add[2], "/pong")), [1], 
                 self.osc_host, self.osc_port)
+        print self.arraysizes, self.arrays
         
     
     def add_button(self, rec):
@@ -1005,7 +1012,7 @@ class GuiThread(QMainWindow):
             if not self.active_modifiers:
                 if self.current_mode == 2:
                     try:
-                        osc.sendMsg("/keyboard", [self.piano_keys.index(e.key()), 1], 
+                        osc.sendMsg("/keyboard", [self.piano_keys.index(e.key()), 0], 
                             self.host, self.port)
                     except ValueError:
                         pass

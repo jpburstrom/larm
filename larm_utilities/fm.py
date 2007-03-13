@@ -67,12 +67,12 @@ class pm7(QWidget):
         self.controls = []
         self.slider_labels = ["/speed", "/speeddev", "/len", "/lendev", "/amp", "/ampdev"] #osc labels
         for i in range(6):
-            slider = MySlider(QSlider.Horizontal, self.tab, self.slider_labels[i])
+            slider = QSlider(QSlider.Horizontal, self.tab, self.slider_labels[i])
             slider.setGeometry(QRect(10,(i * 20)+85,200,24))
             slider.setMinValue(1)
             slider.setMaxValue(1000)
             self.controls.append(slider)
-            self.connect(slider, PYSIGNAL("valueChanged"), self.get_data)
+            self.connect(slider, SIGNAL("valueChanged(int)"), self.get_sliderdata)
         self.slider_labels = set(self.slider_labels)
 
             
@@ -189,9 +189,9 @@ class pm7(QWidget):
         
         self.routing = Routing(11, 3, True, self.tab_2)
         self.routing.set_column_width(80)
-        self.routing_labels = ["op1", "op2", "op3", "relfq", "D", "A", "D", "S", "R", "vol", "pan"]
+        self.routing_labels = ["op1", "op2", "op3", "relfreq", "D", "A", "D", "S", "R", "vol", "pan"]
         #this is stupid.
-        self.routing_labels2 = ["op1", "op2", "op3", "relfq", "delay", "attack", "decay", "sustain", "release", "vol", "pan"]
+        self.routing_labels2 = ["op1", "op2", "op3", "relfreq", "delay", "attack", "decay", "sustain", "release", "vol", "pan"]
         self.routing_osc_labels = ["/op%d/op1", "/op%d/op2", "/op%d/op3", "/op%d/relfreq", 
             "/op%d/delay", "/op%d/attack", "/op%d/decay", "/op%d/sustain", 
             "/op%d/release", "/op%d/vol", "/op%d/pan"]
@@ -224,6 +224,10 @@ class pm7(QWidget):
     def get_data(self, label, data):
         self.saving.store_and_send(label, data)
         #self.saving.state[label] = data
+
+    def get_sliderdata(self, data):
+        self.saving.store_and_send(self.sender().name(), data)
+        #self.saving.state[label] = data
     
     def get_routing_data(self, data):
         self.saving.store_and_send(self.routing_osc_labels[data[0][0]] % (data[0][1] + 1), data[1])
@@ -239,7 +243,7 @@ class pm7(QWidget):
                 else:
                     self.routing.setvalue(self.routing_labels2.index(o[2]), self.routing_labels.index(o[1]), v)
             elif k in self.slider_labels or k.startswith("/oct"):
-                self.child(k).setValue(v)
+                self.tab.child(k).setValue(v)
             else:
                 try:
                     if v == 2:

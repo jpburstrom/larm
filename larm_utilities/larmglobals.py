@@ -10,7 +10,7 @@ def getgl(key):
         "osc_address" : "127.0.0.1", 
         "osc_port" : 9000, #port for sending osc msgs
         "osc_listen_port" : 9001, #port for receiving osc
-        "mouse_device" : "/dev/input/event1", #path to mouse device. you may need r/w permissions...
+        "mouse_device" : "/dev/input/event2", #path to mouse device. you may need r/w permissions...
         "audiodb_path" : 'audiodb/data.db', #relative (to script) or absolute path to audiofile db
         "samplerate" : 48000, #samplerate of backend, needed to calculate rec buffer labels 
         "txtfile" : "notes.txt" #file with notes
