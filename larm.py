@@ -1088,7 +1088,7 @@ class PollingThread:
         command.extend(getgl('pdcommand').split())
         self.pdprocess = QProcess(QStringList.fromStrList(command))
         self.pdprocess.start()
-        self.pd_running = 0
+        self.pd_running = 1
         self.pdloop = 0
         
         # Set up the GUI part
@@ -1115,9 +1115,12 @@ class PollingThread:
 
     
     def stop_pd(self):
-        self.pd_running = 0
-        self.pdprocess.tryTerminate()
-        self.gui.logwindow.append("Stopping engine...")
+        if self.pd_running:
+            self.pd_running = 0
+            self.pdprocess.tryTerminate()
+            self.gui.logwindow.append("Stopping engine...")
+        else:
+            self.gui.logwindow.append("No engine to stop")
         #QTimer.singleShot( 500, self.pdprocess, SLOT("kill()") )
     
     def start_pd(self):
@@ -1126,7 +1129,7 @@ class PollingThread:
             self.pdprocess.start()
             self.pdloop = 0
             self.pd_running = 1
-        else:
+        elif self.pd_running:
             self.gui.logwindow.append("Engine already running")
         
     def really_start_pd(self):
@@ -1143,6 +1146,8 @@ class PollingThread:
         self.stop_pd()
     
     def endApplication(self):
+        self.pdloop = 0
+        self.stop_pd()
         #save notes text
         if isinstance(self.gui.txtfilename, QString):
             self.gui.txtfilename = str(self.gui.txtfilename)
