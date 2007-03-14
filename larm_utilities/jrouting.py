@@ -128,13 +128,10 @@ class Routing(QWidget):
         #reset previous justin case
         if self.currentvalue != None:
             self.table1.setColumnWidth(self.sliderat[1], self.columnwidth)
-            self.table1.setRowHeight(self.sliderat[0], 18)
-            self.table1.clearCellWidget(self.sliderat[0], self.sliderat[1])
             self.table1.setCellWidget(self.sliderat[0], self.sliderat[1], RoutingProgress(1000, self.currentvalue, self.table1))
              
         v = self.values[r][c]
         self.table1.setColumnWidth(c, 200)
-        self.table1.setRowHeight(r, 24)
         self.slider = RoutingSlider(v, self)
         self.currentvalue = v 
         self.table1.setCellWidget(r,c,self.slider)
@@ -142,22 +139,17 @@ class Routing(QWidget):
         self.table1.ensureCellVisible(r,c)
         p = QPoint(self.slider.sliderRect().x() +5, self.slider.sliderRect().y()+5)
         QCursor.setPos(self.slider.mapToGlobal(p))
-        QApplication.setOverrideCursor(QCursor(Qt.BlankCursor))
         mevent = QMouseEvent(QEvent.MouseButtonPress, p, Qt.LeftButton,Qt.LeftButton) 
         self.slider.mousePressEvent(mevent)
-        self.ptimer.start(0, 1)
+        self.ptimer.start(0, 1) # wait for events to be processed.
         self.sliderat = r, c
         self.connect(self.slider, SIGNAL("sliderReleased()"),self.release)
         self.connect(self.slider,SIGNAL("valueChanged(int)"), self.processoutput)
 
     def release(self):
         """action when mouse is released"""
-        QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
         QCursor.setPos(self.oldpos)
-        self.slider.releaseMouse()
-        self.table1.setRowHeight(self.sliderat[0], 18)
         self.table1.setColumnWidth(self.sliderat[1], self.columnwidth)
-        self.table1.clearCellWidget(self.sliderat[0], self.sliderat[1])
         self.table1.setCellWidget(self.sliderat[0], self.sliderat[1], RoutingProgress(1000, self.currentvalue, self.table1))
         self.currentvalue = None
 

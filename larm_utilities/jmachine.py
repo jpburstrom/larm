@@ -89,7 +89,7 @@ class PopupLabel(QLabel):
         QLabel.__init__(self,parent,name,fl)
         self.setPaletteBackgroundColor(QColor(100,50,0))
         self.setGeometry(QRect(10,10,120,20))
-        self.setPaletteForegroundColor(QColor(255,255,255))
+        self.setPaletteForegroundColor(QColor(128,128,128))
         textLabel2_font = QFont(self.font())
         textLabel2_font.setFamily("Pigiarniq Heavy")
         textLabel2_font.setPointSize(10)
@@ -177,7 +177,8 @@ class MiniMachine(QVBox):
         self.load_preset("init")
     
     def update_presets(self, obj, label):
-        if obj is not self and label not in self.presets:
+        if obj is not self and label not in self.presets \
+            and self.__class__ == obj.__class__:
             self.tek.add_preset_byname(label)
         
     def save_snapshot(self, snap, local=True):
@@ -246,6 +247,10 @@ class MiniMachine(QVBox):
             osc.sendMsg("".join([i for i in [self.slashedlabel, k]]), 
                 [v], self.osc_host, self.osc_port)
         self.update_controls()
+        try:
+            self.call_for_canvas_update()
+        except AttributeError:
+            pass
         self.emit(PYSIGNAL("preset_loaded"), (preset,))
     
     def store_and_send(self, k, v):
@@ -271,11 +276,11 @@ class MiniMachine(QVBox):
         
         The argument can be 0 or 1 for off and on, or None for toggle."""
         if not self.onoff or arg == 1:
-            self.tek.setPaletteForegroundColor(QColor(128, 255, 128))
+            self.tek.setPaletteForegroundColor(QColor("gold"))
             self.onoff = True
             osc.sendMsg("".join([i for i in [self.slashedlabel, "/onoff"]]), [1], self.osc_host, self.osc_port)
         elif self.onoff or arg == 0:
-            self.tek.setPaletteForegroundColor(QColor(255,255,255))
+            self.tek.setPaletteForegroundColor(QColor(128,128,128))
             self.onoff = False
             osc.sendMsg("".join([i for i in [self.slashedlabel, "/onoff"]]), [0], self.osc_host, self.osc_port)
     def activate(self):

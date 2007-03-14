@@ -27,6 +27,7 @@ class MySpinBox(QSpinBox):
     def __init__(self, parent = None,name = None):
         QSpinBox.__init__(self,parent,name)
         self.name = name
+        self.setFocusPolicy(QWidget.NoFocus)
         self.connect(self, SIGNAL("valueChanged(int)"), self.getvalue)
     
     def getvalue(self, i):
@@ -95,8 +96,8 @@ class pm7(QWidget):
         self.octLo.setGeometry(QRect(73,204,32,18))
         self.octLo.setMaxValue(9)
         
-        self.connect(self.octLo, PYSIGNAL("valueChanged"), self.get_data)
-        self.connect(self.octHi, PYSIGNAL("valueChanged"), self.get_data)
+        self.connect(self.octLo, PYSIGNAL("valueChanged"), self.oct_get_data)
+        self.connect(self.octHi, PYSIGNAL("valueChanged"), self.oct_get_data)
 
         self.octLoLabel = QLabel(self.tab,"octLoLabel")
         self.octLoLabel.setGeometry(QRect(19,208,55,16))
@@ -224,10 +225,16 @@ class pm7(QWidget):
     def get_data(self, label, data):
         self.saving.store_and_send(label, data)
         #self.saving.state[label] = data
+    
+    def oct_get_data(self, label, data):
+        if label == "/octHi" and data < self.octLo.value():
+            self.octLo.setValue(data)
+        elif label == "/octLo" and data > self.octHi.value():
+            self.octHi.setValue(data)
+        self.saving.store_and_send(label, data)
 
     def get_sliderdata(self, data):
         self.saving.store_and_send(self.sender().name(), data)
-        #self.saving.state[label] = data
     
     def get_routing_data(self, data):
         self.saving.store_and_send(self.routing_osc_labels[data[0][0]] % (data[0][1] + 1), data[1])

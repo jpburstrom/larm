@@ -158,7 +158,7 @@ class Grandel(Machine):
                 self.windows.append(qp)
             else:
                 raise IOError("Can't open image. What's wrong with you?")
-        self.connect(self.controls[2].slider, PYSIGNAL("valueChanged"), self.on_window_change)
+        self.connect(self.controls[2].slider, SIGNAL("valueChanged(int)"), self.on_window_change)
         self.controls[2].label.setPixmap(self.windows[0])
                 
         self.freezebtn = QPushButton("Freeze", self, "/freeze")
@@ -179,7 +179,7 @@ class Grandel(Machine):
         else:
             self.freezebtn.setPaletteForegroundColor(QColor(0,0,0))
             
-    def on_window_change(self, k, v):
+    def on_window_change(self, v):
         self.controls[2].label.setPixmap(self.windows[v])
     
     def update_controls(self, preset = None):
@@ -346,7 +346,6 @@ class MainMachine(MiniMachine):
     def save_snapshot(self, snap, local=True):
         """Calls save method of every machine and saves to their global snapshot thing"""
         for ma in self.parent.machines:
-            print ma
             ma.save_snapshot(snap, False)
     
     def recall_snapshot(self, snap, local=True):
@@ -535,6 +534,8 @@ class MyRouting(Routing):
             self.clear_cell(cl+3, cl)
         
         self.saving = MiniMachine("routing",self,"routingsave")
+        self.saving.init_controls()
+        self.update_controls()
         self.saving.setGeometry(QRect(0,0,314,48))
         self.table1.move(QPoint(0, 50))
         
@@ -597,16 +598,28 @@ class GuiThread(QMainWindow):
             QKeySequence("F10"), self, "focusText")
         self.larmmenu.focusText.addTo(self.larmmenu)
         self.larmmenu.focusText.setToggleAction(1)
-        
-        self.larmmenu.insertItem(".")
-        self.larmmenu.insertItem("..")
-        self.larmmenu.insertItem("...")
+        self.larmmenu.restart_pd = QAction(self, "restart_pd")
+        self.larmmenu.restart_pd.setText("Restart PD")
+        self.larmmenu.restart_pd.addTo(self.larmmenu)
+        self.larmmenu.start_pd = QAction(self, "start_pd")
+        self.larmmenu.start_pd.setText("Start PD")
+        self.larmmenu.start_pd.addTo(self.larmmenu)
+        self.larmmenu.stop_pd = QAction(self, "stop_pd")
+        self.larmmenu.stop_pd.setText("Stop PD")
+        self.larmmenu.stop_pd.addTo(self.larmmenu)
+        self.larmmenu.sendctrl = QAction(self, "sendctrl")
+        self.larmmenu.sendctrl.setText("Send all controls")
+        self.larmmenu.sendctrl.addTo(self.larmmenu)
+        self.larmmenu.oscdebug = QAction(self, "oscdebug")
+        self.larmmenu.oscdebug.setText("Debug OSC")
+        self.larmmenu.oscdebug.setToggleAction(1)
+        self.larmmenu.oscdebug.addTo(self.larmmenu)
+
         self.larmmenu.quitAction = QAction(self, "quitAction")
         self.larmmenu.quitAction.setText("Quit")
         self.larmmenu.quitAction.addTo(self.larmmenu)
         
 #        self.menu.insertItem("_/ _", self.larmmenu)
-        
         
         self.recording = RecordToDisk(self)
         self.recording.setGeometry(50, 0, 200, 24)
@@ -674,7 +687,19 @@ class GuiThread(QMainWindow):
         if (txtfile.open(IO_ReadOnly)):
             stream = QTextStream(txtfile)
             self.textedit.setText(stream.read())
-
+        
+        self.logwindow = QTextEdit(self)
+        self.logwindow.setTextFormat(Qt.LogText)
+        self.logwindow.setPaletteBackgroundColor(QColor(50,50,50))
+        self.logwindow.setPaletteForegroundColor(QColor("orange"))
+        self.logwindow.setHScrollBarMode(QScrollView.AlwaysOff)
+        self.logwindow.setVScrollBarMode(QScrollView.AlwaysOff)
+        self.logwindow.setFocusPolicy(QWidget.NoFocus)
+        self.logwindow.setGeometry(665, 680, 350, 70)
+#        self.logfile = QFile("/tmp/pdlog")
+#        if (self.logfile.open(IO_ReadOnly)):
+#            self.stream = QTextStream(txtfile)  
+#        self.logwindow.append(self.stream.read())
 
         self.rec = ArrayRecorder(self.samplelist, self.narrowbox)
         self.rec.setMinimumHeight(200)
@@ -736,7 +761,8 @@ class GuiThread(QMainWindow):
         self.connect(self.larmmenu.quitAction, SIGNAL("activated()"), self.endcommand)
         self.connect(self.larmmenu.focusText, SIGNAL("toggled(bool)"), 
             self.toggle_textedit_focus)
-    
+        self.connect(self.larmmenu.sendctrl, SIGNAL("activated()"), self.action_sendctrl)
+        self.connect(self.larmmenu.oscdebug, SIGNAL("toggled(bool)"), self.action_oscdebug)
     
     def initActions(self):
         # First start with "keyPress->on, keyRelease->off" type toggles. 
@@ -935,6 +961,16 @@ class GuiThread(QMainWindow):
         for ma in self.machines:
             if ma.active:
                 ma.save_snapshot(i)
+
+    def action_sendctrl(self):
+        for ma in self.machines:
+            for k, v in ma.state.items():
+                ma.store_and_send(k, v)
+    def action_oscdebug(self, boo):
+        if boo:
+            osc.sendMsg("/pd/oscdebug", [1], self.osc_host, self.osc_port)
+        else:
+            osc.sendMsg("/pd/oscdebug", [0], self.osc_host, self.osc_port)
     
     def ac_x_only(self):
         for ma in self.machines:
@@ -955,8 +991,9 @@ class GuiThread(QMainWindow):
         
 
     def action_machine_onoff(self):
-        for ma in Machine.activeMachines:
-            ma.on_off()
+        for ma in self.machines:
+            if ma.active:
+                ma.on_off()
     
     def action_show_numbers(self):
         if Machine.shownumbers:
@@ -1030,7 +1067,6 @@ class GuiThread(QMainWindow):
                     pass
                 except IndexError:
                     pass
-
       
     def closeEvent(self, ev):
         """
@@ -1047,16 +1083,65 @@ class PollingThread:
     def __init__(self):
         qApp.osc = osc
         qApp.osc.init()
-        qApp.inSocket = osc.createListener(getgl('osc_address'), getgl('osc_listen_port'))
+        #qApp.inSocket = osc.createListener(getgl('osc_address'), getgl('osc_listen_port'))
+        command = ['nice', '-n0']
+        command.extend(getgl('pdcommand').split())
+        self.pdprocess = QProcess(QStringList.fromStrList(command))
+        self.pdprocess.start()
+        self.pd_running = 0
+        self.pdloop = 0
         
         # Set up the GUI part
         self.gui=GuiThread(self.endApplication)
         self.gui.show()
         
+        qApp.connect(self.pdprocess, SIGNAL("readyReadStderr()"), self.read_stderr )
+        qApp.connect(self.gui.larmmenu.restart_pd,
+            SIGNAL("activated()"), self.restart_pd)
+        qApp.connect(self.gui.larmmenu.start_pd,
+            SIGNAL("activated()"), self.really_start_pd)
+        qApp.connect(self.gui.larmmenu.stop_pd,
+            SIGNAL("activated()"), self.stop_pd)
+        qApp.connect(self.pdprocess, SIGNAL("processExited()"), 
+            self.start_pd)
+        
         self.running = 1
         self.thread1 = Thread(target=self.workerThread1)
         self.thread1.start()
-          
+
+    def read_stderr(self):
+        while self.pdprocess.canReadLineStderr():
+            self.gui.logwindow.append(self.pdprocess.readLineStderr())
+
+    
+    def stop_pd(self):
+        self.pd_running = 0
+        self.pdprocess.tryTerminate()
+        self.gui.logwindow.append("Stopping engine...")
+        #QTimer.singleShot( 500, self.pdprocess, SLOT("kill()") )
+    
+    def start_pd(self):
+        if self.pdloop and not self.pd_running:
+            self.gui.logwindow.append("Starting engine...")
+            self.pdprocess.start()
+            self.pdloop = 0
+            self.pd_running = 1
+        else:
+            self.gui.logwindow.append("Engine already running")
+        
+    def really_start_pd(self):
+        if not self.pd_running:
+            self.gui.logwindow.append("Starting engine...")
+            self.pdprocess.start()
+            self.pdloop = 0
+            self.pd_running = 1
+        else:
+            self.gui.logwindow.append("Engine already running")
+    
+    def restart_pd(self):
+        self.pdloop = 1
+        self.stop_pd()
+    
     def endApplication(self):
         #save notes text
         if isinstance(self.gui.txtfilename, QString):
@@ -1100,6 +1185,7 @@ class PollingThread:
                 resetRel()
             sleep( polltime)
         print "Closing..."
+        self.stop_pd()
         a.quit()
 try:
     import psyco
