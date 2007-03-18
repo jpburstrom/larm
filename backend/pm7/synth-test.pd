@@ -1,0 +1,9 @@
+#N canvas 246 175 646 474 10;
+#X obj 481 162 synth-backend;
+#X obj 503 245 dac~;
+#X obj 153 349 r OSC;
+#X obj 160 394 print;
+#X obj 417 176 linecheck;
+#X obj 79 24 synth-ui_s;
+#X connect 0 0 1 0;
+#X connect 0 1 1 1;

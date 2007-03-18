@@ -5,7 +5,7 @@ from qt import QColor, QAction, QKeySequence
 def getgl(key):
     
     gl = {
-        "pdcommand" : "pd -nogui /tmp/test.pd", #pd launch command
+        "pdcommand" : "pd -nogui -rt -cb_scheduler /home/johannes/pd/larm/immer2-back.pd", #pd launch command
         "polltime" : 0.02, #ms, how often mouse gets polled
         "mouse_resolution" : 3000, #a factor, larger = faster (i think)
         "osc_address" : "127.0.0.1", 

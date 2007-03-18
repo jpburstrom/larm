@@ -25,6 +25,7 @@ class MouseLooper(Machine):
         self.smplabel.setFont(f)
         self.smplabel.setAlignment(QLabel.AlignRight)
         self.sample_loaded = None
+        self.sample_path = None
         
         self.chkbox = QCheckBox(self.tek, "savesample")
         self.chkbox.setGeometry(0, 0, 12,12)
@@ -67,7 +68,7 @@ class MouseLooper(Machine):
     def update_controls(self, preset = None):
         self.qslider.setValue(self.state["/quantizestep"])
         try: 
-            self.smplabel.setText(self.state["/buffer"])
+            self.smplabel.setText(self.state["/buffer"].split("/")[-1].split(".")[0])
         except KeyError:
             pass
             
@@ -78,17 +79,18 @@ class MouseLooper(Machine):
             self.smplabel.setPaletteForegroundColor(QColor('gold'))
     
     def load_sample(self, sample, path, dest):
+        self.sample_path = path
         if dest == self.label and self.sample_loaded != sample:
             osc.sendMsg("".join([i for i in [self.slashedlabel, "/buffer"]]), [path], self.host, self.port)
             self.smplabel.setText(sample)
             self.sample_loaded = sample
             if self.chkbox.isOn():
-                self.state["/buffer"] = sample
+                self.state["/buffer"] = path
     
     def set_sample_save(self, boo):
-        if boo and self.sample_loaded:
-            self.state["/buffer"] = self.sample_loaded
-        elif not boo and self.sample_loaded:
+        if boo and self.sample_path:
+            self.state["/buffer"] = self.sample_path
+        elif not boo and self.sample_path:
             self.state.pop("/buffer")
     
     def send_qstep(self, int):
@@ -345,19 +347,20 @@ class MainMachine(MiniMachine):
     
     def save_snapshot(self, snap, local=True):
         """Calls save method of every machine and saves to their global snapshot thing"""
-        for ma in self.parent.machines:
+        for ma in self.parent.parent().machines: #BAD HACK
             ma.save_snapshot(snap, False)
+            self.snapbuttons.setsaved(snap)
     
     def recall_snapshot(self, snap, local=True):
-        for ma in self.parent.machines:
+        for ma in self.parent.parent().machines:
             ma.recall_snapshot(snap, False)
 
     def save_preset(self, preset):
-        for ma in self.parent.machines:
+        for ma in self.parent.parent().machines:
             ma.save_preset(preset, False)
 
     def load_preset(self, preset):
-        for ma in self.parent.machines:
+        for ma in self.parent.parent().machines:
             ma.load_preset(preset, False)
 
 class RecordToDisk(QHBox):
@@ -484,7 +487,6 @@ class ArrayRecorder(QVBox):
             self.add_button(add[2])
             osc.sendMsg("".join(("/rick/", add[2], "/pong")), [1], 
                 self.osc_host, self.osc_port)
-        print self.arraysizes, self.arrays
         
     
     def add_button(self, rec):
@@ -914,6 +916,11 @@ class GuiThread(QMainWindow):
             self.textedit.clearFocus()
     
     def turn_on_dsp(self, boo):
+        try:
+            self.recording_inited
+        except AttributeError:
+            osc.sendMsg("/rick/ping", [1], self.osc_host, self.osc_port)
+            self.recording_inited = 1
         if boo:
             osc.sendMsg("/pd/dsp", [1], self.osc_host, self.osc_port)
             self.menu.setText("____")
@@ -942,7 +949,6 @@ class GuiThread(QMainWindow):
     
     def action_count_timer(self):
         self.timercount += 5
-        print self.timercount
         min = self.timercount // 60
         sec = self.timercount % 60
         self.timer.setText('%02d:%02d' % (min, sec))
@@ -1083,7 +1089,7 @@ class PollingThread:
     def __init__(self):
         qApp.osc = osc
         qApp.osc.init()
-        #qApp.inSocket = osc.createListener(getgl('osc_address'), getgl('osc_listen_port'))
+        qApp.inSocket = osc.createListener(getgl('osc_address'), getgl('osc_listen_port'))
         command = ['nice', '-n0']
         command.extend(getgl('pdcommand').split())
         self.pdprocess = QProcess(QStringList.fromStrList(command))
@@ -1119,9 +1125,9 @@ class PollingThread:
             self.pd_running = 0
             self.pdprocess.tryTerminate()
             self.gui.logwindow.append("Stopping engine...")
+        #QTimer.singleShot( 500, self.pdprocess, SLOT("kill()") )
         else:
             self.gui.logwindow.append("No engine to stop")
-        #QTimer.singleShot( 500, self.pdprocess, SLOT("kill()") )
     
     def start_pd(self):
         if self.pdloop and not self.pd_running:

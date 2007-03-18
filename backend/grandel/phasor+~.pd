@@ -1,0 +1,17 @@
+#N canvas 288 352 450 300 10;
+#X obj 132 132 phasor~;
+#X obj 169 47 inlet~;
+#X obj 170 66 snapshot~;
+#X obj 227 48 bang~;
+#X obj 170 84 change;
+#X obj 125 39 inlet~;
+#X obj 134 161 outlet~;
+#X obj 326 66 block~ 64;
+#X msg 169 107 0;
+#X connect 0 0 6 0;
+#X connect 1 0 2 0;
+#X connect 2 0 4 0;
+#X connect 3 0 2 0;
+#X connect 4 0 8 0;
+#X connect 5 0 0 0;
+#X connect 8 0 0 1;

@@ -10,6 +10,7 @@
 import sys
 from qt import *
 from string import capitalize
+from time import sleep
 import copy
 
 import osc
@@ -205,6 +206,7 @@ class MiniMachine(QVBox):
                 self.state[k] = v
                 osc.sendMsg("".join([i for i in [self.slashedlabel, k]]), 
                     [v], self.osc_host, self.osc_port)
+                sleep(0.00001)
         except IndexError:
             pass
         else:
@@ -243,9 +245,14 @@ class MiniMachine(QVBox):
         keys = u.ls()
         for k, v in u.getvalues(keys).items():
             k = str(k.replace("+", "/"))
+            try:
+				float(v)
+            except ValueError:
+                v = str(v)
             self.state[k] = v
             osc.sendMsg("".join([i for i in [self.slashedlabel, k]]), 
                 [v], self.osc_host, self.osc_port)
+            sleep(0.00001)
         self.update_controls()
         try:
             self.call_for_canvas_update()
