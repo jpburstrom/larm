@@ -23,8 +23,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+# from __future__ import division
 import struct, sys, os, time
 from fcntl import ioctl
+
 
 __all__ = ["Event", "Device"]
 
@@ -32,8 +34,8 @@ def demo():
     """Open the event device named on the command line, use incoming
        events to update a device, and show the state of this device.
        """
-#    dev = Device(sys.argv[1])
-    dev = Device("/dev/input/event1")
+    dev = Device(sys.argv[1])
+#    dev = Device("/dev/input/event1")
     p = dev.poll
     while 1:
         p()
@@ -126,9 +128,11 @@ class Device(BaseDevice):
             info = self.absAxisInfo[event.code]
         except KeyError:
             return
-        range = float(info['max'] - info['min'])
-        self.axes[event.code] = (event.value - info['min']) / range * 2.0 - 1.0
-
+        range = float(max(0.1, info['max'] - info['min']))
+        try:
+            self.axes[event.code] = (event.value - info['min']) / range * 2.0 - 1.0 
+        except ZeroDivisionError:
+            pass
 
 class EnumDict:
     """A 1:1 mapping from numbers to strings or other objects, for enumerated
