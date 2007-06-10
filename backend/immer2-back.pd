@@ -332,6 +332,9 @@
 #X restore 153 19 pd adc3-------;
 #X obj 200 189 roombackend /no1;
 #X obj 284 334 recorder-backend;
+#X obj 232 422 print;
+#X obj 232 372 loadbang;
+#X msg 233 395 Done loading;
 #X connect 1 0 18 0;
 #X connect 1 1 18 1;
 #X connect 1 2 3 0;
@@ -376,3 +379,5 @@
 #X connect 18 0 19 0;
 #X connect 18 1 10 1;
 #X connect 18 1 19 1;
+#X connect 21 0 22 0;
+#X connect 22 0 20 0;
