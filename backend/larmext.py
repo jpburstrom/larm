@@ -117,7 +117,7 @@ class wavlength(pyext._class):
 
     def read_1(self,*args):
         self._detach(1)
-        self._priority(15)
+        #self._priority(1)
         try:
             f = wave.open(str(args[0]), "r")
         except IOError:

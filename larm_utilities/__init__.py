@@ -21,9 +21,9 @@ __license__ = "GNU Lesser General Public License"
 
 from canvaslabel import Canvasinfo
 from jcanvas import MarioDots
-from jmachine import Machine, MiniMachine
+from jmachine import *
 from jpopuplist import SampleList 
 from jrouting import Routing
-from saving import Saving
-from fm import pm7, MySlider
+from fm import pm7
 from larmglobals import *
+from osc import *

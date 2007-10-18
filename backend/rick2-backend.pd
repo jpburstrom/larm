@@ -1,4 +1,4 @@
-#N canvas 0 15 589 693 10;
+#N canvas 412 15 589 693 10;
 #X obj 91 42 sel 1 0;
 #X msg 140 41 stop;
 #X obj 175 137 inlet~;
@@ -28,6 +28,11 @@
 #X obj 367 452 symbol \$2;
 #X obj 367 432 loadbang;
 #X msg 367 514 add \$1-rec \$2;
+#X obj 90 235 snapshot~;
+#X obj 90 364 s RECORDER2LOOPER;
+#X obj 171 189 r LOOPER2RECORDER;
+#X obj 171 209 route \$2-rec;
+#X obj 91 314 prepent \$2-rec;
 #X connect 0 0 23 0;
 #X connect 0 1 1 0;
 #X connect 1 0 21 0;
@@ -50,8 +55,13 @@
 #X connect 17 0 12 0;
 #X connect 18 0 10 0;
 #X connect 19 0 18 0;
+#X connect 21 0 29 0;
 #X connect 23 0 6 0;
 #X connect 25 0 28 0;
 #X connect 26 0 25 0;
 #X connect 27 0 26 0;
 #X connect 28 0 24 1;
+#X connect 29 0 33 0;
+#X connect 31 0 32 0;
+#X connect 32 0 29 0;
+#X connect 33 0 30 0;

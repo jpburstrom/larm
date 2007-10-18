@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project soundcanvas -->
-<!-- Saved: 2007-03-14, 01:49:08 -->
+<!-- Saved: 2007-10-17, 21:57:59 -->
 <!-- Copyright (C) 2007 Johannes Burström, johannes@ljud.org -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -12,19 +12,12 @@
   <Email>johannes@ljud.org</Email>
   <Sources>
     <Source>
-      <Name>sc.py</Name>
-    </Source>
-    <Source>
       <Dir>larm_utilities</Dir>
       <Name>jmachine.py</Name>
     </Source>
     <Source>
       <Dir>larm_utilities</Dir>
       <Name>jpopuplist.py</Name>
-    </Source>
-    <Source>
-      <Dir>larm_utilities</Dir>
-      <Name>canvas.py</Name>
     </Source>
     <Source>
       <Dir>larm_utilities</Dir>
@@ -37,10 +30,6 @@
     <Source>
       <Dir>larm_utilities</Dir>
       <Name>larmglobals.py</Name>
-    </Source>
-    <Source>
-      <Dir>larm_utilities</Dir>
-      <Name>machine.py</Name>
     </Source>
     <Source>
       <Dir>larm_utilities</Dir>
@@ -74,7 +63,11 @@
       <Name>test3.py</Name>
     </Source>
     <Source>
-      <Name>larm.py</Name>
+      <Name>main.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>xmlsave.py</Name>
     </Source>
   </Sources>
   <Forms>
@@ -135,7 +128,7 @@
     </Other>
   </Others>
   <MainScript>
-    <Name>sc.py</Name>
+    <Name>main.py</Name>
   </MainScript>
   <Vcs>
     <VcsType>None</VcsType>
@@ -144,8 +137,8 @@
     <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
     <FiletypeAssociation pattern="*.ui" type="FORMS" />
     <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
-    <FiletypeAssociation pattern="*.py" type="SOURCES" />
     <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
   </FiletypeAssociations>
   <PyLint>
     <PyLintParams>(dp0
@@ -164,10 +157,10 @@ I01
 sS'enableFormat'
 p5
 I01
-sS'enableMetrics'
+sS'dialogReport'
 p6
 I01
-sS'dialogReport'
+sS'enableMetrics'
 p7
 I01
 sS'txtReport'

@@ -6,7 +6,6 @@ import evdev
 from copy import copy
 import sys,threading, Queue, qt
 
-#TODO: rewrite code to be more qt-ish
 #ALL OF THIS IS NOW IN MAIN SCRIPT
 
 POLLTIME = 0.02

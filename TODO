@@ -164,8 +164,6 @@ listen:
             /decay
             /sustain
             /release
-    /voice[n]
-        /note (midi)
     /matrix
         /op[n]
             /op[n] 0 100

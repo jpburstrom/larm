@@ -16,7 +16,6 @@ from qt import *
 class SnapButton(QPushButton):
     """Special instance of QPushButton w/ some gui tricks adapted for use with SnapButtonGroup"""
     def __init__(self,parent = None,name = None,fl = 0):
-        self.parent = parent
         self.button = 0
         self.event = 0
         self.saved = False

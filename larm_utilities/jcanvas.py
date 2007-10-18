@@ -63,12 +63,32 @@ class MarioDots(QFrame):
         self.container = QRect() # the container within
         self.sets = {} #sets of dots
         self.texts = {} #sets of dots
-        self.pos = {}
         self.baseX = 0
         self.baseY = 0
         self.canvas.setBackgroundColor(QColor(150, 200, 240))
+        self.canvas.oldbackground = self.canvas.backgroundColor()
         self.addBorder()
         self.baseX = self.container.width() + self.container.left()
+        
+        self.active = 0
+    
+    def mousePressEvent(self, e):
+        self.canvas.oldbackground = self.canvas.backgroundColor()
+        self.canvas.setBackgroundColor(QColor(240, 240, 240))
+        qApp.setOverrideCursor(QCursor(Qt.BlankCursor))
+        self.cpos = self.mapToGlobal(e.pos())
+        self.emit(PYSIGNAL("canvasActive"), (True,))
+        self.active = 1
+        
+    def mouseReleaseEvent(self, e):
+        self.canvas.setBackgroundColor(self.canvas.oldbackground)
+        qApp.restoreOverrideCursor()
+        QCursor.setPos(self.cpos)
+        self.set_inactive()
+    
+    def set_inactive(self):
+        self.emit(PYSIGNAL("canvasActive"), (False,))
+        self.active = 0
         
     def newset(self, label):
         """Init a set of dots"""        
@@ -101,7 +121,6 @@ class MarioDots(QFrame):
             item.show()
     
     def emitlabel(self, foo):
-        print foo
         return foo
 
     def getscale(self):

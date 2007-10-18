@@ -4,13 +4,15 @@ class Saving:
     def __init__(self, path=''):
         self.basepath = "/larm"
         self.path = self.basepath+path
+        self.s = QSettings()
+        self.s.setPath("ljud.org", "soundcanvas", QSettings.User)
     
-    def save(self, state):
+    def save(self, params):
         self.s = QSettings()
         self.s.setPath("ljud.org", "soundcanvas", QSettings.User)
         self.s.beginGroup(self.path)
-        for k, v in state.items():
-            self.s.writeEntry(k.replace("/", "+"), v)
+        for k, param in params.items():
+            self.s.writeEntry(k.replace("/", "+"), param.state)
         self.s.endGroup()
     
     def ls(self):
