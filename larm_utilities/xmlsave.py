@@ -69,11 +69,11 @@ class XmlSaving:
         
         args: Desired preset name, base param, replace = clear preset before update"""
         #First try to find the whole path at once
-        node = self.__class__.root.find(param.full_address[1:])
+        node = self.__class__.root.find(param.full_save_address[1:])
         #If that fails, go through elements one by one: create new ones if needed
         if node is None:
             node = self.__class__.root
-            for add in param.full_address.split("/"):
+            for add in param.full_save_address.split("/"):
                 if len(add) is 0:
                     continue
                 else:
@@ -99,7 +99,7 @@ class XmlSaving:
             if not el.is_saveable():
                 continue
             #extract the relative path of each children
-            rel_path = el.full_address[len(param.full_address) + 1:]
+            rel_path = el.full_save_address[len(param.full_save_address) + 1:]
             #and try to find the path directly
             node = preset.find(rel_path)
             #Otherwise we do a little dance
@@ -129,7 +129,7 @@ class XmlSaving:
         """Loads a preset into param"""
         #Find the node in question
         if not isinstance(presetname, ET._ElementInterface):
-            node = self.__class__.root.find(param.full_address[1:])
+            node = self.__class__.root.find(param.full_save_address[1:])
             if not node:
                 self.load_error()
                 return
@@ -154,7 +154,7 @@ class XmlSaving:
         for p in plist:
             node = preset
             #and for each child, find the state and update.
-            pp = node.find(p.full_address[len(param.full_address) + 1:])
+            pp = node.find(p.full_save_address[len(param.full_save_address) + 1:])
             if pp is None or pp.get('type') is None:
                 continue
             if pp.get('type') == 'bool':
@@ -167,7 +167,7 @@ class XmlSaving:
         return self.load_preset(presetname, param, True)
     
     def delete_preset(self, presetname, param):
-        node = self.__class__.root.find(param.full_address[1:])
+        node = self.__class__.root.find(param.save_address[1:])
         p = self.load_preset(presetname, param, True)
         node.remove(p)
         try:    
@@ -176,7 +176,7 @@ class XmlSaving:
             self.save_error()
     
     def list_presets(self, param):
-        node = self.__class__.root.find(param.full_address[1:])
+        node = self.__class__.root.find(param.full_save_address[1:])
         if not node:
             self.load_error()
             return

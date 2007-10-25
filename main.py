@@ -687,6 +687,8 @@ class GuiThread(QMainWindow):
         
         self.setCaption("LARM")
         
+        qApp.mainwindow = self
+        
         self.actions = {}
         #This is a list, so the background thread can keep a reference
         #to it...
@@ -767,11 +769,10 @@ class GuiThread(QMainWindow):
         self.mlp4 = MouseLooper("MouseLooper4", self.canvas, 
             self.urack2, self.canvaslabels )
         
-        self.machines.append(self.mlp1)
-        self.machines.append(self.mlp2)
-        self.machines.append(self.mlp3)
-        self.machines.append(self.mlp4)
-        
+        for m in (self.mlp1, self.mlp2, self.mlp3, self.mlp4):
+            self.machines.append(m)
+            m.root_param.set_save_address("/mouselooper")
+            
         self.narrowbox = QVBox(self)
         self.narrowbox.setGeometry(650, 55, 140, 670)
         self.narrowbox.setSpacing(4)
@@ -1038,16 +1039,16 @@ class GuiThread(QMainWindow):
             osc.sendMsg("/pd/oscdebug", [0], self.osc_host, self.osc_port)
     
     def tgl_x_only(self, arg = None):
-        if ma.x_only or arg == 0:
-            [ma.set_x_only(0) for ma in self.machines]
+        if arg is not None:
+            [ma.set_x_only(arg) for ma in self.machines]
         else:
-            [ma.set_x_only(1) for ma in self.machines]
+            [ma.set_x_only(ma.y_only) for ma in self.machines]
     
     def tgl_y_only(self, arg = None):
-        if ma.y_only or arg == 0:
-            [ma.set_y_only(0) for ma in self.machines]
+        if arg is not None:
+            [ma.set_x_only(arg) for ma in self.machines]
         else:
-            [ma.set_y_only(1) for ma in self.machines]
+            [ma.set_x_only(ma.y_only) for ma in self.machines]
             
     def tgl_finetune(self, arg):
         if self.mouse_finetune[0] or arg == 0:
@@ -1250,7 +1251,7 @@ class PollingThread:
         del self.inSocket
         self.thread1.isrunning = 0
         self.stop_pd()
-        sleep(0.2)
+        sleep(0.1)
         qApp.quit()
 class MyDevice(evdev.Device):
     def __init__(self, filename):

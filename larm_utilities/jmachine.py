@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file '/home/johannes/python/sc/machine.ui'
-#
-# Created: tis feb 20 21:55:08 2007
-#      by: The PyQt User Interface Compiler (pyuic) 3.16
-#
-# WARNING! All changes made in this file will be lost!
+#TODO: update preset menu on sibling delete
 
 import sys
 from qt import *
@@ -45,6 +39,8 @@ class Param(QObject):
             self.full_address = self.parent().full_address + self.address
         else:
             self.full_address = self.address
+        self.full_save_address = self.full_address
+        self.save_address = self.address
         self.update_paths()
         
         self.label = kwargs.get('label') or ""
@@ -79,6 +75,8 @@ class Param(QObject):
     def set_address(self, address):
         #First remove osc binding
         osc.bind(self.handle_incoming_osc, None)
+        if self.address == self.save_address:
+            self.set_save_address(address)
         self.address = address
         if self.parent():
             self.full_address = self.parent().full_address + self.address
@@ -101,6 +99,7 @@ class Param(QObject):
         ql = self.queryList("Param")
         for o in ql:
             o.full_address = o.parent().full_address + o.address
+            o.set_save_address()    
             o.update_paths()
     
     def removeChild(self, child):
@@ -114,6 +113,10 @@ class Param(QObject):
         ql = self.queryList("Param")
         for o in ql:
             print o.full_address
+    def printSaveTree(self):
+        ql = self.queryList("Param")
+        for o in ql:
+            print o.full_save_address
     
     def update_paths(self):
         self.__class__._paths[self.full_address] = self
@@ -216,7 +219,17 @@ class Param(QObject):
         if self._enableosc:
             self._send_to_osc()
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
-        
+    
+    def set_save_address(self, add=None):
+        if add:
+            self.save_address = add
+        if self.parent():
+            self.full_save_address = self.parent().full_save_address + self.save_address
+        else:
+            self.full_save_address = self.save_address
+        for o in self.queryList("Param"):
+            o.set_save_address() 
+
 class ParamController(QObject):
     def __init__(self, *args):
         QSlider.__init__(self, *args)
@@ -295,11 +308,6 @@ class ParamController(QObject):
         else:
             self.param_disconnect()
             
-    
-    def __del__(self):
-        self.param_disconnect()
-        
-    
 class ParamSlider(QSlider):
     """ A slider made for hooking up w/ a PAram object.
     
@@ -659,7 +667,7 @@ class PresetComboBox(QHBox):
         self.cb.setFocus()
         self.cb.lineEdit().clear()
         self.show()
-    
+        
     def my_hide(self):
         self.cb.setEditable(False)
         self.cb.setFocusPolicy(self.NoFocus)
@@ -675,6 +683,10 @@ class PresetComboBox(QHBox):
             self.current_preset = None
             self.my_hide()
     
+    def insert_item(self, txt):
+        self.presets.append(txt)
+        self.cb.insertItem(txt)
+    
     def select_preset(self, i):
         item = str(self.cb.text(i))
         self.current_preset = item
@@ -684,6 +696,7 @@ class PresetComboBox(QHBox):
             self.save_preset()
             self.cb.setEditable(0)
             self.parent().append_preset_to_label()
+            qApp.emit(PYSIGNAL('new_preset'), (self.parent(), self.root_param.full_save_address, item))
         else:
             self.load_preset()
         self.my_hide()
@@ -808,17 +821,34 @@ class PopupLabel(QLabel):
         self.setFixedHeight(20)
         self.setAlignment(Qt.AlignRight)
         
+        self.lmb = 0
+        self.rmb = 0
+        self.gesture_done = 1
+        
     def mousePressEvent(self, e):
         """Activate (show canvas) on label middle-click"""
-        if e.button() == 1:
+        if e.button() == 1 and not self.rmb:
             self.parent().tgl_active()
+        elif e.button() == 1 and self.rmb:
+            self.gesture_done = 0
+            self.parent().on_off()
         elif e.button() == 2:
+            self.rmb = 1
+        elif e.button() == 4:
+            pass
+    def mouseReleaseEvent(self, e):
+        if e.button() == 1:
+            self.lmb = 0
+        if e.button() == 2 and not self.lmb:
+            self.rmb = 0
+            if not self.gesture_done:
+                self.gesture_done = 1
+                return
             if not self.parent().preset_menu.isShown():
                 self.parent().preset_menu.show()
             else:
                 self.parent().preset_menu.hide()
-        elif e.button() == 4:
-            pass
+                
 ##            try:
 ##                self.parent().routing_menu.popup(QCursor.pos())
 ##            except AttributeError:
@@ -827,7 +857,10 @@ class PopupLabel(QLabel):
             
             
     def mouseDoubleClickEvent(self, e):
-        if e.button() == 1:
+        if self.rmb:
+            QLabel.mouseDoubleClickEvent(self, e)
+        elif e.button() == 1:
+            qApp.mainwindow.deactivate_all()
             self.parent().activate()
             #here we go
             try:
@@ -895,10 +928,10 @@ class MiniMachine(QVBox):
         self.root_param.insertChild(self.onoff)
         
         #all instances with the same parent gets a signal when a new preset is born
-        if self.parent():
-            self.connect(self.parent(), PYSIGNAL("new_preset"), self.update_presets)
-            self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.update_controls)
-            self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.append_preset_to_label)
+        self.connect(qApp, PYSIGNAL("new_preset"), self.update_presets)
+        
+        self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.update_controls)
+        self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.append_preset_to_label)
     
     def create_routing_menu(self):
         self.routing_menu = _ParamRoutingPopup2(self.root_param, self)
@@ -911,14 +944,12 @@ class MiniMachine(QVBox):
         self.append_preset_to_label()
     
     def load_preset(self, current_preset, callback):
-        """redefine this to make something before loading presets"""
         self.saving.load_preset(current_preset, self.root_param)
         callback()
     
-    def update_presets(self, obj, label):
-        if obj is not self and label not in self.presets \
-            and self.__class__ == obj.__class__:
-            self.tek.add_preset_byname(label)
+    def update_presets(self, o, add, label):
+        if add == self.root_param.full_save_address and o is not self:
+            self.preset_menu.insert_item(label)
         
     def save_snapshot(self, snap):
         """ Save snapshot
@@ -1355,7 +1386,6 @@ class _RoutingRow(Param):
         p = self.param_reciever
         if self.param_sender.type in (float, int) and self.param_reciever.type in (float, int):
             min, max = p.min, p.max 
-            print min, max
             self.min_value_param.set_max_value(max)
             self.min_value_param.set_min_value(min)
             self.min_value_param.set_state(min)
@@ -1373,7 +1403,6 @@ class _RoutingRow(Param):
     def handle_check(self, i):
         if i == self.UpdateState:
             f = self.controller.set_enabled(self.get_state())
-        #Disable if not able to activate
     
     def set_values(self, msg):
         if msg is not self.UpdateState:
@@ -1382,6 +1411,10 @@ class _RoutingRow(Param):
             self.controller.min_value = self.min_value_param.get_state()
         elif self.sender() is self.max_value_param:
             self.controller.max_value = self.max_value_param.get_state()
+    
+    def delete(self):
+        self.controller.set_enabled(0)
+        del self
 
 class ParamRouting(QVBox):
     sources = set()
@@ -1396,6 +1429,7 @@ class ParamRouting(QVBox):
         
         self.saving.setGeometry(20,20,400,400)
         self.table = QTable(self)
+        self.table.setPaletteBackgroundColor(QColor("white"))
         self.table.setSelectionMode(QTable.NoSelection)
         self.root_param = self.saving.root_param
         
@@ -1448,13 +1482,11 @@ class ParamRouting(QVBox):
     def toggle_show(self):
         if not self.table.isShown():
             self.old_geometry = self.geometry().normalize()
-            print self.old_geometry.width()
             self.raiseW()
             self.setGeometry(QRect(200, 200, 708, 500))
             self.show_table()
         else:
             self.setUpdatesEnabled(0)
-            print self.old_geometry.width()
             self.setGeometry(self.old_geometry)
             self.hide_table()
             self.setUpdatesEnabled(1)
@@ -1509,7 +1541,7 @@ class ParamRouting(QVBox):
     def remove_router(self, row):
         self.root_param.removeChild(self.routers[row])
         QTable.removeRow(self.table, row)
-        del self.routers[row]
+        self.routers[row].delete()
         self.saving.emit(PYSIGNAL("setDirty"), (self.root_param.UpdateState,))
     
 def popup():

@@ -45,12 +45,12 @@ class _FigureEditor(QCanvasView):
                 del each_item
         self.canvas().update()
 
-    def contentsMouseMoveEvent(self,e):pass
-      #  if  self.__moving :
-      #      point = self.inverseWorldMatrix().map(e.pos());
-      #      self.__moving.moveBy(point.x() - self.__moving_start.x(),point.y() - self.__moving_start.y())
-      #      self.__moving_start = point
-      #  self.canvas().update()
+    def contentsMouseMoveEvent(self,e):
+        if self.__moving:
+            point = self.inverseWorldMatrix().map(e.pos());
+            self.__moving.moveBy(point.x() - self.__moving_start.x(),point.y() - self.__moving_start.y())
+            self.__moving_start = point
+            self.canvas().update()
 
 
 class MarioDots(QFrame):

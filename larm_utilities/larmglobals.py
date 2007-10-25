@@ -9,7 +9,7 @@ def getgl(key):
     
     gl = {
         "pdcommand" : "".join(["pd -nogui -rt ", sys.path[0],  "/backend/immer2-back.pd"]), #pd launch command
-        "pdcommand" : "true", #pd launch comma
+        #"pdcommand" : "true", #not pd launch command
         "polltime" : 0.04, #ms, how often mouse gets polled
         "mouse_resolution" : 1500, #some kind of resolution factor, larger = slower
         "osc_address" : "127.0.0.1", 

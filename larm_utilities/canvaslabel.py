@@ -28,9 +28,8 @@ class Canvasinfo(QWidget):
         
         self.canvaslabels.setNumRows(5)
         for i in range (5):
-            #FIXME:pahts....
             self.canvaslabels.verticalHeader().setLabel(i,
-                QIconSet(QPixmap("larm_utilities/sprite%d.png" % (i + 1))),QString.null)
+                QIconSet(QPixmap(sys.path[0]+"/larm_utilities/sprite%d.png" % (i + 1))),QString.null)
         self.canvaslabels.setGeometry(QRect(0,20,300,128))
 
         self.canvaslabels.setCursor(QCursor(13))

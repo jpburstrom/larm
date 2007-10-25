@@ -2,19 +2,10 @@
 <!DOCTYPE Session SYSTEM "Session-3.8.dtd">
 <!-- eric3 session file for project soundcanvas -->
 <!-- This file was generated automatically, do not edit. -->
-<!-- Saved: 2007-10-17, 21:57:59 -->
+<!-- Saved: 2007-10-21, 09:33:49 -->
 <Session version="3.8">
   <Filenames>
-    <Filename cline="140" cindex="0">/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/jmachine.py</Filename>
-    <Filename cline="28" cindex="66">/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/larmglobals.py</Filename>
-    <Filename cline="68" cindex="65">/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/jcanvas.py</Filename>
-    <Filename cline="220" cindex="9">/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/xmlsave.py</Filename>
-    <Filename cline="247" cindex="45">/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/fm.py</Filename>
-    <Filename cline="1085" cindex="0">/home/johannes/myprojects/larm/branches/TRY-new-version/main.py</Filename>
-    <Filename cline="27" cindex="18">/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/__init__.py</Filename>
-    <Filename cline="171" cindex="0">/home/johannes/myprojects/larm/branches/TRY-new-version/backend/larmext.py</Filename>
   </Filenames>
-  <ActiveWindow cline="1085" cindex="0">/home/johannes/myprojects/larm/branches/TRY-new-version/main.py</ActiveWindow>
   <Breakpoints>
   </Breakpoints>
   <Watchpoints>
@@ -30,13 +21,5 @@
     <CovexcPattern></CovexcPattern>
   </DebugInfo>
   <Bookmarks>
-    <Bookmark>
-      <BmFilename>/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/jmachine.py</BmFilename>
-      <Linenumber value="1341" />
-    </Bookmark>
-    <Bookmark>
-      <BmFilename>/home/johannes/myprojects/larm/branches/TRY-new-version/larm_utilities/jmachine.py</BmFilename>
-      <Linenumber value="1362" />
-    </Bookmark>
   </Bookmarks>
 </Session>

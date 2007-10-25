@@ -115,8 +115,10 @@ class wavlength(pyext._class):
     _inlets=1
     _outlets=1
 
-    def read_1(self,*args):
+    def __init__(self):
         self._detach(1)
+
+    def read_1(self,*args):
         #self._priority(1)
         try:
             f = wave.open(str(args[0]), "r")
