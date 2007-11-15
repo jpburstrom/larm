@@ -1,0 +1,17 @@
+#N canvas 0 15 815 716 10;
+#X obj 264 340 sel 1;
+#X obj 233 340 f;
+#X obj 233 369 spigot;
+#X obj 337 313 t f f;
+#X obj 291 411 outlet;
+#X obj 233 310 inlet vol;
+#X obj 337 291 inlet switch;
+#X text 235 247 volume with onoff switch;
+#X connect 0 0 1 0;
+#X connect 0 1 4 0;
+#X connect 1 0 2 0;
+#X connect 2 0 4 0;
+#X connect 3 0 0 0;
+#X connect 3 1 2 1;
+#X connect 5 0 1 0;
+#X connect 6 0 3 0;

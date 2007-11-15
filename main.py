@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #TODO: Perhaps move all osc sending functions to param or similar
 
 
@@ -8,23 +9,19 @@ from qt import *
 
 from copy import copy
 from time import sleep
-from Queue import Queue
 
-#import osc
 import evdev
 
 from larm_utilities import *
 
-
 class MouseLooper(Machine):
     """GUI for the looping machine. """
-    def __init__(self,label,canvas, parent = None, canvaslabel = None, name = None,fl = 0):
-        Machine.__init__(self,label, canvas, parent, canvaslabel,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
+        Machine.__init__(self,label, canvas, parent, name,fl)
                 
-        self.buffer_param = Param(type=str, address="/buffer")
+        self.buffer_param = Param(type=list, address="/buffer")
         self.buffer_param.set_saveable(0)
         self.root_param.insertChild(self.buffer_param)
-
         
         self.smplabel = ParamLabel(self.buffer_param, self)
         self.smplabel.setAlignment(QLabel.AlignRight)
@@ -74,30 +71,29 @@ class MouseLooper(Machine):
         else:
             self.smplabel.setPaletteForegroundColor(QColor('gold'))
     
-    def load_sample(self, sample, path, dest):
+    def load_sample(self, lst, dest):
         self.sample_path = path
-        if dest == self.label and self.sample_loaded != sample:
-            self.buffer_param.set_state(path)
-            self.sample_loaded = path
+        if dest == self.label and self.sample_loaded != lst:
+            self.buffer_param.set_state(lst)
+            self.sample_loaded = lst
     
     def set_chkbox_color(self, boo):
         if boo:
             self.chkbox.setPaletteBackgroundColor(Qt.green)
         else:
             self.chkbox.setPaletteBackgroundColor(Qt.white)
-        
 
     def set_sample_save(self, boo):
         self.buffer_param.set_saveable(boo)
     
     def generate_label_tuple(self):
-        self.label_tuple = (self.label, [
-        ['Pan', 'Volume'],
-        ['Pitch deviation', 'Pitch'],
-        ['Skip', 'Grain length'],
-        ['Offset', 'Size'],
-        ['Quantize amount', 'Quantize speed']
-        ] )
+        self.label_tuple = (self.label, (
+        ('Pan', 'Volume'),
+        ('Pitch deviation', 'Pitch'),
+        ('Skip', 'Grain length'),
+        ('Offset', 'Size'),
+        ('Quantize amount', 'Quantize speed')
+        ) )
         
     def set_mouse_parameters(self):
         self.mouse_parameters =   {
@@ -143,22 +139,32 @@ class LabelSlider(QHBox):
             
 class Grandel(Machine):
     """GUI for the granulator"""
-    def __init__(self,label,canvas, parent = None, canvaslabel = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent, canvaslabel,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
+        Machine.__init__(self,label,canvas, parent,name,fl)
         
-        self.sliderbox = QVBox(self)
+        self.container = QHBox(self)
+        self.sliderbox = QVBox(self.container)
         self.controls = []
         self.params = []
-        self.slider_labels = ["/voldev", "/pandev", "/window"] #osc labels
+        self.slider_labels = ["/voldev", "/pandev", "/transpdevq", "/window"] #osc labels
         for i in range(3):
-            self.params.append(Param(type=int, address=self.slider_labels[i], max=100, min=0))
+            self.params.append(Param(type=float, address=self.slider_labels[i], max=100, min=0))
             self.root_param.insertChild(self.params[i])
-            slider = LabelSlider(self.params[i], self.slider_labels[i], 
-                self.sliderbox, self.slider_labels[i])
+            slider = ParamProgress(self.params[i], self.sliderbox)
             self.controls.append(slider)
-        self.params[2].set_max_value(9)
-        self.controls[2].slider.setPageStep(1)
-
+            QToolTip.add(slider, self.slider_labels[i])
+        self.params[2].set_max_value(48)
+        ##window chooser
+        self.windowchooser = QVBox(self.container)
+        self.windowchooser.setSpacing(1)
+        self.params.append(Param(type=int, address=self.slider_labels[3], max=9, min=0))
+        self.root_param.insertChild(self.params[3])
+        slider = ParamSlider(self.params[3], self.windowchooser)
+        self.controls.append(slider)
+        slider.setMinimumWidth(50)
+        self.windowlabel = QLabel("", self.windowchooser)
+        self.windowlabel.setMinimumWidth(50)
+        self.controls[3].setPageStep(1)
         self.windows = []
         for n in range(10):
             qp = QPixmap(QString((sys.path[0]+"/larm_utilities/wave%d.png") % (n + 1)))
@@ -166,8 +172,8 @@ class Grandel(Machine):
                 self.windows.append(qp)
             else:
                 raise IOError("Can't open image. What's wrong with you?")
-        self.connect(self.controls[2].slider, SIGNAL("valueChanged(int)"), self.on_window_change)
-        self.controls[2].label.setPixmap(self.windows[0])
+        self.connect(self.controls[3], SIGNAL("valueChanged(int)"), self.on_window_change)
+        self.windowlabel.setPixmap(self.windows[0])
         
         self.mastertempo = Param(type=float, address="/master_tempo", min=0, max=32)
         self.mastertempo_sl = LabelSlider(self.mastertempo, "Master Tempo", self)
@@ -180,6 +186,9 @@ class Grandel(Machine):
         self.freezebtn.setText("Freeze")
         self.freezebtn.setMaximumHeight(16)
         self.freezebtn.setFlat(1)
+        
+        self.add_small_toggles("/gliss")
+        
         self.connect(self.freezebtn, SIGNAL("toggled(bool)"), self.on_freeze)
         
         self.connect(self, PYSIGNAL("snapshot_loaded"), self.update_controls)
@@ -191,7 +200,7 @@ class Grandel(Machine):
             self.freezebtn.setPaletteForegroundColor(QColor(0,0,0))
             
     def on_window_change(self, v):
-        self.controls[2].label.setPixmap(self.windows[v])
+        self.windowlabel.setPixmap(self.windows[9-v])
     
     def update_controls(self, preset = None):
         if self.freezebtn_param.get_state():
@@ -200,13 +209,13 @@ class Grandel(Machine):
             self.freezebtn.setPaletteForegroundColor(QColor(0,0,0))
     
     def generate_label_tuple(self):
-        self.label_tuple = (self.label, [
-        ['Speed jitter', 'Speed'],
-        ['Size jitter', 'Size'],
-        ['Transp jitter', 'Transp'],
-        ['Delay jitter', 'Delay'],
-        ['Pan', 'Vol']
-        ] )
+        self.label_tuple = (self.label, (
+        ('Speed jitter', 'Speed'),
+        ('Size jitter', 'Size'),
+        ('Transp jitter', 'Transp'),
+        ('Delay jitter', 'Delay'),
+        ('Pan', 'Vol')
+        ) )
         
     def set_mouse_parameters(self):
         self.mouse_parameters =   {
@@ -229,8 +238,8 @@ class Grandel(Machine):
 
 class Delay(Machine):
     """GUI for the delay"""
-    def __init__(self,label,canvas, parent = None, canvaslabel = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent, canvaslabel,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
+        Machine.__init__(self,label,canvas, parent,name,fl)
         
         self.mastertempo = Param(type=float, address="/master_tempo", min=0, max=32)
         self.mastertempo_sl = LabelSlider(self.mastertempo, "Master Tempo", self)
@@ -238,13 +247,13 @@ class Delay(Machine):
         self.root_param.insertChild(self.mastertempo)
     
     def generate_label_tuple(self):
-        self.label_tuple = (self.label, [
-        ['Right time', 'Left time'],
-        ['Right fb', 'Left fb'],
-        ['Dropout size', 'Dropout prob'],
-        ['', 'Volume'],
-        ['', '']
-        ] )
+        self.label_tuple = (self.label, (
+        ('Right time', 'Left time'),
+        ('Right fb', 'Left fb'),
+        ('Dropout size', 'Dropout prob'),
+        ('', 'Volume'),
+        ('', '')
+        ) )
 
     def set_mouse_parameters(self):
         self.mouse_parameters =   {
@@ -267,17 +276,17 @@ class Delay(Machine):
 
 class Room(Machine):
     """GUI for the room/reverb"""
-    def __init__(self,label,canvas, parent = None, canvaslabel = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent, canvaslabel,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
+        Machine.__init__(self,label,canvas, parent,name,fl)
     
     def generate_label_tuple(self):
-        self.label_tuple = (self.label, [
-        ['Liveness', 'Distance'],
-        ['Slope', 'Xfreq'],
-        ['Distortion', 'Volume'],
-        ['', ''],
-        ['', '']
-        ] )
+        self.label_tuple = (self.label, (
+        ('Liveness', 'Distance'),
+        ('Slope', 'Xfreq'),
+        ('Distortion', 'Volume'),
+        ('', ''),
+        ('', '')
+        ) )
 
     def set_mouse_parameters(self):
         self.mouse_parameters =   {
@@ -300,8 +309,8 @@ class Room(Machine):
 
 class Combo(Machine):
     """GUI for the comb filter"""
-    def __init__(self,label,canvas, parent = None, canvaslabel = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent, canvaslabel,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
+        Machine.__init__(self,label,canvas, parent,name,fl)
         
         self.sliderbox = QVBox(self)
         self.controls = []
@@ -316,13 +325,13 @@ class Combo(Machine):
                 self.sliderbox, self.slider_labels[i]))
             
     def generate_label_tuple(self):
-        self.label_tuple = (self.label, [
-        ['Pitch 1', 'Vol 1'],
-        ['Pitch 2', 'Vol 2'],
-        ['Pitch 3', 'Vol 3'],
-        ['Pitch 4', 'Vol 4'],
-        ['Pitch 5', 'Vol 5']
-        ])
+        self.label_tuple = (self.label, (
+        ('Pitch 1', 'Vol 1'),
+        ('Pitch 2', 'Vol 2'),
+        ('Pitch 3', 'Vol 3'),
+        ('Pitch 4', 'Vol 4'),
+        ('Pitch 5', 'Vol 5')
+        ))
         
     def set_mouse_parameters(self):
         self.mouse_parameters =   {
@@ -493,7 +502,7 @@ class ArrayRecorder(QVBox):
             if not self.sltag_added:
                 self.samplelist.addtag(".:recordings")
                 self.sltag_added = 1
-            self.samplelist.addsample(".:recordings", self.arrays[add[2]])
+            self.samplelist.addsample(".:recordings", [self.arrays[add[2]]])
             self.add_button(add[2])
             osc.sendMsg("".join(("/main/rick/", add[2], "/pong")), [1], 
                 self.osc_host, self.osc_port)
@@ -547,20 +556,20 @@ class MyArduino(MiniMachine):
             lab = QLabel(p, box)
             self.rescaleparams.append(Param(address=p,type=bool))
             self.rescale.insertChild(self.rescaleparams[i])
+            setmin = Param(address="/set_min", type=Bang)
+            minbutton = ParamPushButton(setmin, box)
+            self.rescaleparams[i].insertChild(setmin)
+            minbutton.setText("Set Min")
             setmax = Param(address="/set_max", type=Bang)
             self.rescaleparams[i].insertChild(setmax)
             maxbutton = ParamPushButton(setmax, box)
             maxbutton.setText("Set Max")
-            setmin = Param(address="/set_min", type=Bang)
-            self.rescaleparams[i].insertChild(setmin)
-            minbutton = ParamPushButton(setmin, box)
-            minbutton.setText("Set Min")
             max = Param(address="/max", type=float)
             min = Param(address="/min", type=float)
             self.rescaleparams[i].insertChild(min)
             self.rescaleparams[i].insertChild(max)
             
-            lab2 = ParamLabel(gloveparams[i], box)
+            lab2 = ParamProgress(gloveparams[i], box)
             lab2.setFixedWidth(100)
             
             
@@ -624,11 +633,6 @@ class MyMenu(QPopupMenu):
     def __init__(self, parent, name):
         QPopupMenu.__init__(self, parent, name)
         
-        self.parent().dspAction = QAction(self.parent(), "dspAction")
-        self.parent().dspAction.setToggleAction(1)
-        self.parent().dspAction.setText("DSP")
-        self.parent().dspAction.addTo(self)
-        self.insertSeparator()
         self.parent().recPathAction = QAction("Set rec path", 
             QKeySequence("F12"), self.parent(), "recPathAction")
         self.parent().recPathAction.addTo(self)
@@ -657,6 +661,10 @@ class MyMenu(QPopupMenu):
         self.parent().stop_pd = QAction(self.parent(), "stop_pd")
         self.parent().stop_pd.setText("Stop PD")
         self.parent().stop_pd.addTo(self)
+        self.parent().pd_gui = QAction(self.parent())
+        self.parent().pd_gui.setText("Show PD gui (after restart)")
+        self.parent().pd_gui.setToggleAction(1)
+        self.parent().pd_gui.addTo(self)
         self.parent().sendctrl = QAction(self.parent(), "sendctrl")
         self.parent().sendctrl.setText("Send all controls")
         self.parent().sendctrl.addTo(self)
@@ -682,8 +690,10 @@ class GuiThread(QMainWindow):
     params and gives them a proper parent, "/main". Does all the action/keyboard
     shortcut stuff that is so damn hard to maintain."""
 
-    def __init__(self, endcommand, *args):
+    def __init__(self, starter, *args):
         QMainWindow.__init__(self, *args)
+        
+        self.starter = starter
         
         self.setCaption("LARM")
         
@@ -702,7 +712,7 @@ class GuiThread(QMainWindow):
         self.menubutton = QPushButton(self, "Menu")
         self.menubutton.setPaletteForegroundColor(QColor('gold'))
         self.menubutton.setGeometry(2,2,40, 20)
-        self.menubutton.setText("_/ _")
+        self.menubutton.setText("menu")
         self.menubutton.setPaletteBackgroundColor(QColor(50,50,50))
         self.larmmenu = MyMenu(self, "larmmenu")
         self.larmmenu.setGeometry(0, 30, 200, 200)
@@ -710,7 +720,7 @@ class GuiThread(QMainWindow):
       
         #THA RECORDER
         self.recording = RecordToDisk(self)
-        self.recording.setGeometry(50, 0, 200, 24)
+        self.recording.setGeometry(50, 0, 250, 24)
         
         #THA STATUSBAR
         self.status = self.statusBar()
@@ -727,15 +737,20 @@ class GuiThread(QMainWindow):
         qApp.osc.bind(self.cpu_report, "/pd/cpu") 
         
 ######################################################
-##CANVAS
+##MIDDLE RACK
 ######################################################
 
-        self.canvascon = QVBox(self)
-        self.canvascon.setGeometry(345, 5, 305, 470)
-        self.canvaslabels = Canvasinfo(self.canvascon)
-        self.canvaslabels.setFixedSize(300, 148)
-        self.canvas = MarioDots(self.canvascon, "Hej hej")
-        self.canvas.setFixedHeight(302)
+        cc = QVBox(self)
+        cc.setGeometry(320, 5, 330, 470)
+        cc.setSpacing(2)
+        
+        brack = QHBox(cc)
+        QHBox(brack) #dummy
+        self.dspbutton = QPushButton("_/ _", brack)
+        self.dspbutton.setToggleButton(1)
+        QHBox(brack) #dummy
+        QHBox(cc)
+        self.canvas = MarioDots(cc, "Hej hej")
         
         #this should be before samplers(?)
         self.urack = QVBox(self)
@@ -761,13 +776,13 @@ class GuiThread(QMainWindow):
         self.urack2 = QVBox(self.urack)
         self.urack2.setSpacing(2)
         self.mlp1 = MouseLooper("MouseLooper1", self.canvas, 
-            self.urack2, self.canvaslabels )
+            self.urack2)
         self.mlp2 = MouseLooper("MouseLooper2", self.canvas, 
-            self.urack2, self.canvaslabels )
+            self.urack2)
         self.mlp3 = MouseLooper("MouseLooper3", self.canvas, 
-            self.urack2, self.canvaslabels )
+            self.urack2)
         self.mlp4 = MouseLooper("MouseLooper4", self.canvas, 
-            self.urack2, self.canvaslabels )
+            self.urack2)
         
         for m in (self.mlp1, self.mlp2, self.mlp3, self.mlp4):
             self.machines.append(m)
@@ -824,16 +839,16 @@ class GuiThread(QMainWindow):
         self.pm7 =  pm7(self.rack1, "pm7")
         self.machines.append(self.pm7.saving)
         
-        self.grandel = Grandel("Grandel", self.canvas, self.rack1, self.canvaslabels)
+        self.grandel = Grandel("Grandel", self.canvas, self.rack1)
         self.machines.append(self.grandel)
         
-        self.delay = Delay("Delay", self.canvas, self.rack1, self.canvaslabels)
+        self.delay = Delay("Delay", self.canvas, self.rack1)
         self.machines.append(self.delay)
         
-        self.combo = Combo("Combo", self.canvas, self.rack1, self.canvaslabels)
+        self.combo = Combo("Combo", self.canvas, self.rack1)
         self.machines.append(self.combo)
 
-        self.room = Room("Room", self.canvas, self.rack1, self.canvaslabels)
+        self.room = Room("Room", self.canvas, self.rack1)
         self.machines.append(self.room)
         
         self.my_arduino = MyArduino(self)
@@ -846,10 +861,11 @@ class GuiThread(QMainWindow):
         for ma in self.machines:
             self.saving.root_param.insertChild(ma.root_param)
             if ma is not self.param_routing.saving:
+                qApp.splash.message("Initing %s" % ma.label.title())
                 ma.init_controls()
         self.saving.init_controls()
+        qApp.splash.message("Initing Param routing")
         self.param_routing.init_controls(self.saving.root_param)
-        
 ######################################################
 ##EPILOGUE
 ######################################################
@@ -857,7 +873,7 @@ class GuiThread(QMainWindow):
         self.setFocusPolicy(QWidget.StrongFocus)
         self.setFocus()
         
-        self.endcommand = endcommand  
+        self.endcommand = self.starter.endApplication
         
         #This is the main mode. It's about how we treat key presses.
         #we also have the piano mode (2)
@@ -876,7 +892,7 @@ class GuiThread(QMainWindow):
         self.osc_host = getgl('osc_address')
         self.osc_port = getgl('osc_port')
         
-        self.connect(self.dspAction, SIGNAL("toggled(bool)"), self.turn_on_dsp)
+        self.connect(self.dspbutton, SIGNAL("toggled(bool)"), self.turn_on_dsp)
         self.connect(self.recPathAction, 
             SIGNAL("activated()"), self.recording.choose_recpath)
         self.connect(self.startTimerAction, 
@@ -976,19 +992,26 @@ class GuiThread(QMainWindow):
             self.my_arduino.hide()
             
     def turn_on_dsp(self, boo):
-        try:
-            self.recording_inited
-        except AttributeError:
-            osc.sendMsg("/main/rick/ping", [1], self.osc_host, self.osc_port)
-            self.recording_inited = 1
+        if not self.starter.pdprocess.isRunning():
+            if boo:
+                self.sender().setOn(0)
+                self.logwindow.show()
+                self.logwindow.raiseW()
+                self.starter.really_start_pd()
+            return
         if boo:
+            try:
+                self.recording_inited
+            except AttributeError:
+                osc.sendMsg("/main/rick/ping", [1], self.osc_host, self.osc_port)
+                self.recording_inited = 1
             osc.sendMsg("/pd/dsp", [1], self.osc_host, self.osc_port)
-            self.menubutton.setText("____")
-            self.menubutton.setPaletteBackgroundColor(QColor("red"))
+            self.dspbutton.setText("____")
+            self.dspbutton.setPaletteBackgroundColor(QColor("red"))
         else:
             osc.sendMsg("/pd/dsp", [0], self.osc_host, self.osc_port)
-            self.menubutton.setText("_/ _")
-            self.menubutton.setPaletteBackgroundColor(QColor(50,50,50))
+            self.dspbutton.setText("_/ _")
+            self.dspbutton.unsetPalette()
     
     def set_piano_mode(self, boo):
         self.current_mode = int(boo) + 1 
@@ -1039,18 +1062,21 @@ class GuiThread(QMainWindow):
             osc.sendMsg("/pd/oscdebug", [0], self.osc_host, self.osc_port)
     
     def tgl_x_only(self, arg = None):
+        self.status.message("Canvas X only", 1000)
         if arg is not None:
             [ma.set_x_only(arg) for ma in self.machines]
         else:
-            [ma.set_x_only(ma.y_only) for ma in self.machines]
+            [ma.set_x_only(ma.x_only) for ma in self.machines]
     
     def tgl_y_only(self, arg = None):
+        self.status.message("Canvas Y only", 1000)
         if arg is not None:
-            [ma.set_x_only(arg) for ma in self.machines]
+            [ma.set_y_only(arg) for ma in self.machines]
         else:
-            [ma.set_x_only(ma.y_only) for ma in self.machines]
+            [ma.set_y_only(ma.y_only) for ma in self.machines]
             
     def tgl_finetune(self, arg):
+        self.status.message("Canvas Finetune", 1000)
         if self.mouse_finetune[0] or arg == 0:
             self.mouse_finetune[0] = 0
         else:
@@ -1067,12 +1093,11 @@ class GuiThread(QMainWindow):
     def action_show_numbers(self):
         if Machine.shownumbers:
             Machine.shownumbers = 0
-            for ma in Machine.activeMachines:
-                ma.do_hide_numbers()
+            [ma.do_hide_numbers() for ma in Machine.activeMachines]
         else:
             Machine.shownumbers = 1
-            for ma in Machine.activeMachines:
-                ma.do_show_numbers()
+            [ma.do_show_numbers() for ma in Machine.activeMachines]
+                
     
     def leaveEvent(self, e):
         self.active_modifiers.clear()
@@ -1165,16 +1190,19 @@ class PollingThread:
     def __init__(self):
         qApp.osc = osc
         qApp.osc.init()
-        self.inSocket = osc.createListener(getgl('osc_address'), getgl('osc_listen_port'))
-        command = ['nice', '-n0']
-        command.extend(getgl('pdcommand').split())
-        self.pdprocess = QProcess(QStringList.fromStrList(command))
-        self.pdprocess.start()
-        self.pd_running = 1
+        try:
+            self.inSocket = osc.createListener(getgl('osc_address'), getgl('osc_listen_port'))
+        except:
+            QMessageBox.critical(None, "Larm", "OSC address %s, port %d, is already in use.\nPerhaps another instance of Larm is already running. \nOtherwise change your settings." % (getgl('osc_address'), getgl('osc_listen_port')))
+            sys.exit()
+        
+        self.pdcommand = ['nice', '-n0', 'pd', '-rt', '-nogui']
+        self.pdcommand.append(getgl('pdcommand'))
+        self.pdprocess = QProcess()
         self.pdloop = 0
         
         # Set up the GUI part
-        self.gui=GuiThread(self.endApplication)
+        self.gui=GuiThread(self)
         self.gui.show()
         
         qApp.connect(self.pdprocess, SIGNAL("readyReadStderr()"), self.read_stderr )
@@ -1184,17 +1212,25 @@ class PollingThread:
             SIGNAL("activated()"), self.really_start_pd)
         qApp.connect(self.gui.stop_pd,
             SIGNAL("activated()"), self.stop_pd)
+        qApp.connect(self.gui.pd_gui,
+            SIGNAL("activated()"), self.change_pd_gui)
         qApp.connect(self.pdprocess, SIGNAL("processExited()"), 
             self.start_pd)
         
         self.osc_timer = QTimer()
         QObject.connect(self.osc_timer, SIGNAL("timeout()"), self.read_osc)
         self.osc_timer.start(2)
-        self.running = 1
-
+        
+        qApp.splash.message("Starting event polling thread")
         self.thread1 = RealPollingThread(self.gui)
         self.thread1.start()
-
+    
+    def change_pd_gui(self):
+        self.pdcommand = ['nice', '-n0', 'pd', '-rt']
+        if not self.gui.pd_gui.isOn():
+            self.pdcommand.append("-nogui")
+        self.pdcommand.append(getgl('pdcommand'))
+        
     def read_osc(self):
         osc.getOSC(self.inSocket)
         
@@ -1203,29 +1239,29 @@ class PollingThread:
             self.gui.logwindow.append(self.pdprocess.readLineStderr())
     
     def stop_pd(self):
-        if self.pd_running:
-            self.pd_running = 0
+        if self.pdprocess.isRunning():
             self.pdprocess.tryTerminate()
             self.gui.logwindow.append("Stopping engine...")
-        #QTimer.singleShot( 500, self.pdprocess, SLOT("kill()") )
+            return True
         else:
             self.gui.logwindow.append("No engine to stop")
+            return False
     
     def start_pd(self):
-        if self.pdloop and not self.pd_running:
+        if self.pdloop and not self.pdprocess.isRunning():
+            self.pdprocess.setArguments(QStringList.fromStrList(self.pdcommand))
             self.gui.logwindow.append("Starting engine...")
             self.pdprocess.start()
             self.pdloop = 0
-            self.pd_running = 1
-        elif self.pd_running:
+        elif self.pdprocess.isRunning():
             self.gui.logwindow.append("Engine already running")
         
     def really_start_pd(self):
-        if not self.pd_running:
+        if not self.pdprocess.isRunning():
+            self.pdprocess.setArguments(QStringList.fromStrList(self.pdcommand))
             self.gui.logwindow.append("Starting engine...")
             self.pdprocess.start()
             self.pdloop = 0
-            self.pd_running = 1
         else:
             self.gui.logwindow.append("Engine already running")
     
@@ -1234,25 +1270,25 @@ class PollingThread:
         self.stop_pd()
     
     def endApplication(self):
+        self.gui.logwindow.show()
+        self.gui.logwindow.raiseW()
         self.pdloop = 0
-        self.stop_pd()
+        if self.pdprocess.isRunning():
+            self.stop_pd()
         #save notes text
-        if isinstance(self.gui.txtfilename, QString):
-            self.gui.txtfilename = str(self.gui.txtfilename)
-
+        self.gui.logwindow.append("Saving notes file...")
+        filename = str(self.gui.txtfilename)
         s=str(self.gui.textedit.text())
 
-        f = open(self.gui.txtfilename, "w")
+        f = open(filename, "w")
         f.write(s)
         if s[-1:] != "\n":
             f.write("\n")
-        f.flush()
-        self.running = 0
-        del self.inSocket
+        f.close()
         self.thread1.isrunning = 0
-        self.stop_pd()
-        sleep(0.1)
-        qApp.quit()
+        self.gui.logwindow.append("Good-bye!")
+        QTimer.singleShot(1000, qApp, SLOT("quit()"))
+        
 class MyDevice(evdev.Device):
     def __init__(self, filename):
         evdev.Device.__init__(self, filename)
@@ -1301,6 +1337,8 @@ class RealPollingThread(QThread):
             resetRel()
             poll()
             if machines and self.active:
+                d.axes['REL_X'] = d.axes['REL_X'] * 8 #abs(d.axes['REL_X'])
+                d.axes['REL_Y'] = d.axes['REL_Y']* 8 #abs(d.axes['REL_Y'])
                 if finetune[0]:
                     d.axes['REL_X'] /= 20.0
                     d.axes['REL_Y'] /= 20.0
@@ -1308,19 +1346,21 @@ class RealPollingThread(QThread):
             sleep(polltime)
         
 
-try:
-    import psyco
-    psyco.bind(PollingThread)
-    psyco.bind(Machine.handle_mouse)
-    psyco.bind(Machine.update_canvas)
-except ImportError:
-    "Can't import psyco. What do we do?"
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)
+    try:
+        import psyco
+        psyco.profile()
+    except ImportError:
+        QMessageBox.information(None, "Larm", "Can't import psyco. Install it to make it go fast.")
+    pix = QPixmap(sys.path[0]+"/splash.png")
+    qApp.splash = QSplashScreen(pix)
+    qApp.splash.show()
     QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
     client = PollingThread()
     a.setMainWidget(client.gui)
+    qApp.splash.hide()
     a.exec_loop()
                 
 

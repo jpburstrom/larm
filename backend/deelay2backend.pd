@@ -1,5 +1,5 @@
-#N canvas 290 220 450 300 10;
-#N canvas 256 127 745 444 delay 0;
+#N canvas 0 15 661 716 10;
+#N canvas 0 15 661 716 delay 0;
 #X obj 216 101 inlet~;
 #X obj 146 101 inlet~;
 #X obj 215 252 outlet~;
@@ -21,7 +21,7 @@
 #X obj 323 -5 outlet;
 #X obj 328 230 OSCroute /gapper-prob /gapper-size;
 #X obj 215 172 delay_mono;
-#X obj 146 12 OSCroute /delay /tempo;
+#X obj 144 8 OSCroute /delay /tempo;
 #X obj -21 27 OSCroute /master_tempo;
 #X obj -20 64 t f f f f;
 #X obj 43 -3 r MASTER_TEMPO;
@@ -31,6 +31,7 @@
 #X obj 125 76 spigot 1;
 #X obj 187 76 spigot 1;
 #X obj 60 76 == 0;
+#X obj 294 19 simple-osc-seq-4;
 #X connect 0 0 14 0;
 #X connect 1 0 13 0;
 #X connect 4 0 9 4;
@@ -68,6 +69,7 @@
 #X connect 19 0 8 0;
 #X connect 20 0 16 0;
 #X connect 20 0 21 0;
+#X connect 20 0 30 0;
 #X connect 21 0 22 0;
 #X connect 22 0 26 1;
 #X connect 22 1 25 0;
@@ -81,6 +83,7 @@
 #X connect 28 0 19 1;
 #X connect 29 0 27 1;
 #X connect 29 0 28 1;
+#X connect 30 0 16 0;
 #X restore 137 97 pd delay;
 #X obj 101 51 inlet~;
 #X obj 141 51 inlet~;

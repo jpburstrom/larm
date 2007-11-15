@@ -6,7 +6,9 @@ from qttable import QTable, QTableItem
 from jmachine import Param, ParamProgress
 
 class Routing(QWidget):
-    """A variable-sized table with sliders, ideal for signal routing purposes."""
+    """A variable-sized table with sliders, ideal for signal routing purposes.
+    
+    Args: rows (int), columns (int), route to self (bool), Parent (obj) (None),"""
     def __init__(self, row, col, routeToSelf = True, parent = None,name = None,fl = 0):
         QWidget.__init__(self,parent,name,fl)
         if not name:

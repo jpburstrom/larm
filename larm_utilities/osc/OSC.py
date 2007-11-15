@@ -284,7 +284,7 @@ class CallbackManager:
         or removes the callback with name if callback
         is None."""
         if callback == None:
-            del self.callbacks[name]
+            self.callbacks.pop(name, None)
         else:
             self.callbacks[name] = callback
 

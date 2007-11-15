@@ -8,12 +8,25 @@
 # WARNING! All changes made in this file will be lost!
 
 
-import sys
+import sys, os
 from qt import *
-from audiodb import AudioDb
+from sqlobject import *
 from larmglobals import getgl
 
 
+class dbSoundFiles(SQLObject):
+    fullPath = StringCol()
+    hash = StringCol(length=32)
+    active = BoolCol(default=True)
+    size = IntCol()
+    channels = IntCol()
+    samplerate = IntCol()
+    tags = RelatedJoin('dbTags')
+
+class dbTags(SQLObject):
+    name = StringCol()
+    dbSoundFiles = RelatedJoin('dbSoundFiles')
+    
 class SampleList(QWidget):
     """Load tagged soundfile from database and display them in a neat window
     
@@ -29,18 +42,27 @@ class SampleList(QWidget):
         audiodb_path = getgl('audiodb_path')
         if audiodb_path[0] != "/" :
             audiodb_path = "".join((sys.path[0], "/", audiodb_path))
-        adb = AudioDb(audiodb_path)
+        
+        db_filename = os.path.abspath(audiodb_path)
+        connection_string = 'sqlite://' + db_filename
+        connection = connectionForURI(connection_string)
+        sqlhub.processConnection = connection
         
         self.destinations = []
-        self.tags = adb.alltags()
+        self.tags = self.alltags()
+        self.tags.append('@ALL')
         self.tags.sort()
         self.samples = {}
+        
         for tag in self.tags:
             self.samples[tag] = {}
-            paths = adb.findfilesfromtag(tag)
+            if tag == '@ALL':
+                paths = self.findfilesfromtag()
+            else:
+                paths = self.findfilesfromtag(tag)
             self.sort_by_filename(paths)
             for i in paths:
-                self.samples[tag][i.split("/")[-1].split(".")[0]] = i
+                self.samples[tag][i[0].split("/")[-1].split(".")[0]] = i
         
         textLabel2_font = QFont(self.font())
         textLabel2_font.setFamily("Pigiarniq Heavy")
@@ -78,8 +100,26 @@ class SampleList(QWidget):
         self.connect(self.popupBox,SIGNAL("mouseButtonClicked(int, QListBoxItem*,const QPoint&)"),self.selectDest)
         self.connect(qApp, PYSIGNAL("new_sampler"), self.new_sampler)
     
+    def findfilesfromtag(self, tag = None):
+        if tag:
+            tagObj = dbTags.selectBy(name=tag)
+        else:
+            tagObj = dbTags.select()
+        fl = []
+        for tag in tagObj:
+            [fl.append([t.fullPath, str(t.size), t.samplerate, t.channels]) \
+            for t in tag.dbSoundFiles if t.active is True]
+        return fl
+    
+    def alltags(self):
+        tagObj = dbTags.select()
+        tl = []
+        for tag in tagObj:
+            tl.append(tag.name)
+        return tl
+    
     def sort_by_filename(self, paths):
-        paths[:] = [(x.split("/")[-1], x) for x in paths]
+        paths[:] = [(x[0].split("/")[-1], x) for x in paths]
         paths.sort()
         paths[:] = [val for (key, val) in paths]
 
@@ -93,8 +133,8 @@ class SampleList(QWidget):
         self.samples[tag] = {}
         self.populate()
         
-    def addsample(self, tag, path):
-        self.samples[tag][path.split("/")[-1].split(".")[0]] = path
+    def addsample(self, tag, list):
+        self.samples[tag][list[0].split("/")[-1].split(".")[0]] = list
 
     def populate(self):
         self.popupBox.clear()
@@ -138,14 +178,13 @@ class SampleList(QWidget):
             self.destination = a0.text()
             self.switchview()
             self.popupBox.hide()
-            qApp.emit(PYSIGNAL("load_sample"),(self.sample, self.samples[self.tag][self.sample], self.destination))
+            qApp.emit(PYSIGNAL("load_sample"),(self.samples[self.tag][self.sample], self.destination))
         else:
             self.reset()
 
 if __name__ == "__main__":
     def sort_by_filename(paths):
         paths[:] = [(x.split("/")[-1], x) for x in paths]
-        print paths
         paths.sort()
         print paths
         paths[:] = [val for (key, val) in paths]

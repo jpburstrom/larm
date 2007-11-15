@@ -6,12 +6,17 @@ from os import path
 #from xmlsave import XmlSaving
 
 def getgl(key):
+    """Get basic settings for the program
+    
+    Instead of relying on a complex xml or qt setting setup, 
+    this is an oldschool python dictionary serving basic settings.
+    
+    Arg: dict key"""
     
     gl = {
-        "pdcommand" : "".join(["pd -nogui -rt ", sys.path[0],  "/backend/immer2-back.pd"]), #pd launch command
-        #"pdcommand" : "true", #not pd launch command
+        "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s.pd"]), #file to launch
         "polltime" : 0.04, #ms, how often mouse gets polled
-        "mouse_resolution" : 1500, #some kind of resolution factor, larger = slower
+        "mouse_resolution" : 3000, #some kind of resolution factor, larger = slower
         "osc_address" : "127.0.0.1", 
         "osc_port" : 9000, #port for sending osc msgs
         "osc_listen_port" : 9001, #port for receiving osc
@@ -25,6 +30,13 @@ def getgl(key):
     return gl[key]
     
 def get_keyboard(caller):
+    """A function serving keyboard shortcuts
+    
+    This function returns a python dictionary with key/method pairs. The methods 
+    may be on/off toggles and stuff, called from the main class.
+    
+    Arg: Calling class instance"""
+    
     keys = {"tgl_keys" : 
         #these are functions taking 1/0 as argument, for keyboard press/release.
                 {"nomod" : {
@@ -83,10 +95,15 @@ def get_keyboard(caller):
     return keys
     
 def dbp(*msg):
+    """A simple and unused debug print function.
+    
+    Args: message to print."""
     pass
     #print msg
     
 def alert(*msg):
+    """A simple alert box.
     
+    Args: message to display"""
     QMessageBox.warning(None, "Larm says:", "".join(msg))
     

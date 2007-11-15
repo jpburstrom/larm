@@ -7,7 +7,7 @@ import FileHasher
 
 __all__ = ["AudioDb"]
 
-db_filename = os.path.abspath('data.db')
+db_filename = os.path.abspath('audiodb/data.db')
 #if os.path.exists(db_filename):
 #    os.unlink(db_filename)
 connection_string = 'sqlite://' + db_filename
@@ -29,7 +29,7 @@ class AudioDb:
 
     filepath = ['.', "/mnt/magnum/_BACKUP/mobile/home/samples"]  # Change this to your audio file directories
 
-    def __init__(self, path='data.db'):
+    def __init__(self, path='audiodb/data.db'):
     
         db_filename = os.path.abspath(path)
         #if os.path.exists(db_filename):
@@ -62,15 +62,21 @@ class AudioDb:
         """Print a silly delimiter for easier view"""
         print "=========================="
 
-    def listfiles(self):
+    def listfiles(self, filter=None):
         """Print out all files in database as well as return all file objects"""
-        fileObjs = dbSoundFiles.select()
+        q=''
+        if filter in ("@ALL", "@UNTAGGED"):
+            q = dbSoundFiles.q.active==True
+        elif filter == ("@INACTIVE"):
+            q = dbSoundFiles.q.active==False
+        fileObjs = dbSoundFiles.select(q)
         i = 0
         filelist = []
-        for fileObj in fileObjs:
-            print "%d > %s" % (i, fileObj.fullPath)
-            i += 1
-        return fileObjs
+        [filelist.append(f.fullPath) for f in fileObjs if not f.tags or filter != "@UNTAGGED"]
+        #for fileObj in fileObjs:
+        #    print "%d > %s" % (i, fileObj.fullPath)
+        #    i += 1
+        return filelist
 
 
     def listtags(self, hash=None):
@@ -217,11 +223,14 @@ class AudioDb:
 
 
 
-    def findfilesfromtag(self, tag):
-        tagObj = dbTags.select(dbTags.q.name==tag)
+    def findfilesfromtag(self, tag = None):
+        if tag:
+            tagObj = dbTags.select(dbTags.q.name==tag)
+        else:
+            tagObj = dbTags.select()
         fl = []
         for tag in tagObj:
-            for t in tag.dbSoundFiles: fl.append(t.fullPath)
+            [fl.append(t.fullPath) for t in tag.dbSoundFiles]
         return fl
 
 

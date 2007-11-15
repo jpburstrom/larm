@@ -4,7 +4,6 @@
 import sys
 from qt import *
 from qttable import *
-from string import capitalize
 from time import sleep
 import copy
 
@@ -20,15 +19,28 @@ if osc.addressManager is 0:
 OSCDEBUG = 0
 
 class Bang(list):
-    """A Bang is nothing but an empty list. Use with caution."""
+    """Just an empty list. 
+    
+    Doesn't override any list methods except __init__, so should be used
+    with caution."""
+
     def __init__(self, *args):
         pass
     
 class Param(QObject):
     """Abstract gui element/machine parameter class.
     
-    NB: The self.state is a one-item list, so the reference can be passed: see
-    the handle_mouse function in Machine. """
+    This is the heart of the Larm parameter system. Param inherits QObject, and
+    uses its parent->child hierarchy to build parameter trees which are later on
+    converted into OSC addresses. 
+    
+    An instance is created with one or several keyword arguments to define 
+    local address, label, type (int, float, bool, str, list, Bang) min/max values and/or
+    state. 
+    
+    The param is pretty useless in itself, but works together with other params and
+    specialized GUI classes to create a magnificent network of beautiful things.
+    """
     
     _paths = {} # full_address->object dictionary
     
@@ -49,8 +61,14 @@ class Param(QObject):
         self.min = kwargs.get('min') or 0.0
         
 
-                
-        self.state = [0] ##as list, to make it mutable and 
+        if self.type is list:
+            self.state = [[]]
+        elif self.type is str:
+            self.state = ['']
+        elif self.type is bool:
+            self.state = [False]
+        else:
+            self.state = [0] ##as list, to make it mutable and 
                         ##possible to change from parent.state
         self.dirty = False ##currently unused..
         
@@ -58,7 +76,6 @@ class Param(QObject):
         self.UpdateMin = 2
         self.UpdateMax = 4
         
-        self._autoupdate = True
         self._enableosc = True
         self._saveable = True
         if self.type is Bang:
@@ -73,18 +90,16 @@ class Param(QObject):
         self.osc_port = getgl('osc_port')
 
     def set_address(self, address):
-        #First remove osc binding
-        osc.bind(self.handle_incoming_osc, None)
+        """Set new local address.
+        
+        A Param may be created without address.This method is used
+        to set the address and make sure that the network around is updated,
+        as well as the OSC bindings."""
+        
         if self.address == self.save_address:
             self.set_save_address(address)
         self.address = address
-        if self.parent():
-            self.full_address = self.parent().full_address + self.address
-        else:
-            self.full_address = self.address
         self.update_paths()
-        #And rebind OSC to the new address...
-        osc.bind(self.handle_incoming_osc, "/incoming" + self.full_address)
         
     def insertChild(self, child):
         """ Adds child to Param instance.
@@ -92,7 +107,10 @@ class Param(QObject):
         Param instances are organised in a tree, corresponding with the OSC 
         structure. This method allows for a safe insertion of a child, which
         updates the child's children and grandchildren and so forth to think
-        of their new dad and remember his birthday and stuff. """
+        of their new dad and remember his birthday and stuff. 
+        
+        You'll need to call this method to hook up the Param to the network."""
+        
         if not isinstance(child, Param):
             raise TypeError, "Only Param children to Param parents."
         QObject.insertChild(self, child)
@@ -103,40 +121,67 @@ class Param(QObject):
             o.update_paths()
     
     def removeChild(self, child):
+        """Remove Param child.
+        
+        Unhooks the child from the network."""
+        
         QObject.removeChild(self, child)
+        #FIXME: why this?
         ql = self.queryList("Param")
         for o in ql:
             o.full_address = o.parent().full_address + o.address
             o.update_paths()
     
     def printTree(self):
+        """Prints the full OSC address of children, for debug purposes."""
         ql = self.queryList("Param")
         for o in ql:
             print o.full_address
+            
     def printSaveTree(self):
+        """Prints the saving address of children, for debug purposes."""
         ql = self.queryList("Param")
         for o in ql:
             print o.full_save_address
     
     def update_paths(self):
+        """All things that needs to be done after changing local address."""
+        
+        osc.bind(None, "/incoming" + self.full_address)
+        if self.parent():
+            self.full_address = self.parent().full_address + self.address
+        else:
+            self.full_address = self.address
         self.__class__._paths[self.full_address] = self
         osc.bind(self.handle_incoming_osc, "/incoming" + self.full_address)
+        self.set_save_address(None, False)
+        ql = self.queryList("Param", None, True, False) #Non-recursive
+        [o.update_paths() for o in ql if \
+        o.full_address != o.parent().full_address + o.address]
+                
         
     def find_param_from_path(self, path):
         """Return param object from full path, None if not existing"""
+        
         return self.__class__._paths.get(path)
             
     def set_saveable(self, boo):
+        """Set if param is possible to save in presets, bool"""
         self._saveable = boo
     def is_saveable(self):
+        """If param is possible to save in preset"""
         return self._saveable
         
     def set_enableosc(self, boo):
+        """Enable OSC send, bool"""
         self._enableosc = boo
-    def set_autoupdate(self, boo):
-        self._autoupdate = boo
     
     def set_state(self, v, echo=False):
+        """Change current value/string of Param.
+        
+        Changes value, sends to OSC and emits signals to eg gui, notifying
+       of the changes."""
+       
         v = self.type(self.within(v))
         self.state[0] = v
         if self._enableosc:
@@ -146,25 +191,42 @@ class Param(QObject):
             qApp.emit(PYSIGNAL("paramEcho"), (self.address, v))
             
     def within(self, v):
+        """Makes sure the state value is between boundaries, if applicable."""
+        
         if self.type not in (float, int) or None in (self.max, self.min):
             return v
         else:
             return max(self.min, min(self.max, v))
     
     def set_max_value(self, v):
+        """Set max value, for float and int params."""
+        
         self.max = v
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateMax,))
     
     def set_min_value(self, v):
+        """Set min value, for float and int params."""
+        
         self.min = v
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateMin,))
         
     def get_state(self):
+        """Get current state.
+        
+        The state is internally represented as a one-item list. 
+        This makes it possible to pass the reference to the value to other methods.
+        I don't know why you'd want to do that, but I probably had a reason once.
+        This method extracts the value from the list and returns it."""
+        
         return self.state[0]
             
     def _send_to_osc(self):
+        """Private method for OSC sending"""
+        
         if self.type is bool:
             state = [int(self.state[0])]
+        elif self.type is list:
+            state = self.state[0]
         else:
             state = self.state
         self.oscSend(self.full_address, state, self.osc_host, self.osc_port)
@@ -172,12 +234,23 @@ class Param(QObject):
 ##            print "OSC: " ,self.full_address,  self.state
 ##    
     def typecheck(self, p):
+        """Compares type with another param.
+        
+        For one param to control another param, it has to be of the same type.
+        An exception is floats and ints, which can control each other. This 
+        might be changed - there's maybe reasonable for bools to control ints and
+        floats as well, setting min and max values..."""
+        
         fi = (float, int)
         return self.type is p.type or (self.type in fi and p.type in fi)
         
     def check_connection(self, o):
-        """Checks if an object exists among the set of objects sending to this Param, and
-        most of all recursively."""
+        """Looking for feedback loops in param connections
+        
+        Before connecting this param to another, this method checks that the
+        other param isn't currently controlling this one, to avoid feedback 
+        control loops. Works recursively through the connection tree."""
+        
         if self is o:
             return False
         clist = self._connections_recv #sic!
@@ -192,43 +265,53 @@ class Param(QObject):
     def add_connection(self, o):
         """Adds a connection from this Param to another one. 
         
-        Also checks recursively for feedback loops. Returns false if 
-        connection is not possible (= causes a loop)."""
+        Returns True if connection was successful, otherwise False."""
         
-        #First check if we're trying to route it to itself.
-        #Return false, which will be passed on recursively to 
-        #the original sender
         if (not self.check_connection(o)) or self is o:
             return False
-        ##print "Adding %s as send from %s" % (o.full_address, self.full_address)
+
         self._connections_send.add(o)
         o._connections_recv.add(self)
         return True
         
     def remove_connection(self, o):
-        #First check if we're trying to route it to itself.
-        #Return false, which will be passed on recursively to 
-        #the original sender
+        """Remove connection between self and another."""
+        
         self._connections_send.discard(o)
         o._connections_recv.discard(self)
         return True
     
     def handle_incoming_osc(self, *msg):
+        """Takes care of incoming osc messages.
+        
+        Updates state, sends to OSC (sic) and emits signals for GUI updates."""
+        
         v = self.type(msg[0][2])
         self.state[0] = self.within(v)
         if self._enableosc:
             self._send_to_osc()
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
     
-    def set_save_address(self, add=None):
-        if add:
+    def set_save_address(self, add=None, updatechildren = True):
+        """Update or set the current preset save address.
+        
+        The save address is the path in the xml preset file. It's most
+        often the same as the (OSC) address, but sometimes you want many
+        instances of the same class to share presets. Then you can set them
+        to share the save address, and everything will be wonderful.
+        
+        If argument 1 is None, the method updates the current save path. Otherwise
+        (if str) it sets it. Arg 2: If True (default), runs recursively through all
+        children. Otherwise only updates this instance."""
+        
+        if isinstance(add, str):
             self.save_address = add
         if self.parent():
             self.full_save_address = self.parent().full_save_address + self.save_address
         else:
             self.full_save_address = self.save_address
-        for o in self.queryList("Param"):
-            o.set_save_address() 
+        if updatechildren:
+            [o.set_save_address(None, True) for o in self.queryList("Param", None, True, False)]
 
 class ParamController(QObject):
     def __init__(self, *args):
@@ -445,6 +528,48 @@ class ParamPushButton(QPushButton):
     
     def handle_button(self):
         self.param.set_state(self.isOn())
+
+class ParamThreeStateButton(QPushButton):
+    def __init__(self, param, *args):
+        QPushButton.__init__(self, *args)
+        self.param = param
+        ##Sync with param, for the very first time.
+        self.color = self.paletteBackgroundColor()
+        self.state = 0
+        self.set_state(param.get_state())
+        self.setName(param.label)
+        self.setText(param.label)
+        if param.type is not int :
+            raise TypeError, "ParamThreeStateButton needs an int Param.type"
+
+        self.connect(self.param, PYSIGNAL("paramUpdate"),
+                        self.handle_update)
+        self.setFocusPolicy(QWidget.NoFocus)
+                        
+    def mousePressEvent(self, ev):
+        if ev.button() == 1 and self.state is not 1:
+            s = 1
+        elif ev.button() == 2 and self.state is not 2:
+            s = 2
+        elif ev.button() in (1,2):
+            s = 0
+        self.set_state(s)
+        self.param.set_state(s)
+    
+    def set_state(self, state):
+        self.state = state
+        if state is 0:
+            self.setPaletteBackgroundColor(self.color)
+        elif state is 1:
+            self.setPaletteBackgroundColor(QColor("green"))
+        elif state is 2:
+            self.setPaletteBackgroundColor(QColor("red"))
+    
+    def handle_update(self, p):
+        """Recieves signal from the Param, updates Gui.
+        """
+        if p is self.param.UpdateState and self.param.type is not Bang:
+            self.set_state(self.param.get_state())
  
 class ParamRadioButton(QRadioButton):
     def __init__(self, param, *args):
@@ -499,6 +624,7 @@ class ParamProgress(QProgressBar):
         QFrame.__init__(self, *args)
         self.param = param
         
+        
         if param.type not in (float, int):
             raise TypeError, "ParamProgress needs a float or int Param.type"
         ##Sync with param, for the very first time.
@@ -510,17 +636,30 @@ class ParamProgress(QProgressBar):
         self.connect(self.param, PYSIGNAL("paramUpdate"), self.handle_update)
         self.setFocusPolicy(QWidget.NoFocus)
         
+        self.setPaletteForegroundColor(QColor("gray"))
+        
         self.setPercentageVisible(True)
+        
+        self.dblclick_value = self.param.min
+        
+    def mouseDoubleClickEvent(self, e):
+        s = self.param.get_state()
+        if s == self.param.min:
+            self.param.set_state(self.dblclick_value)
+        else:
+            self.dblclick_value = s 
+            self.param.set_state(self.param.min)
+            
         
     def mousePressEvent(self, e):
         self.origo = self.mapToGlobal(e.pos())
+        self.offset = e.pos().y()
         self.setCursor(QCursor(Qt.BlankCursor))
         #print self.origo.y()
     def mouseMoveEvent(self, e):
         f = self.param.max - self.param.min
         s = (self.param.get_state() + \
-            ((self.mapFromGlobal(self.origo).y() - e.y()) \
-            * f / 1000.0))
+            ((self.offset - e.y()) * f / 1000.0 ))
         if self.param.within(s) != self.param.get_state():
             self.param.set_state(s, 1)
             try:
@@ -528,7 +667,10 @@ class ParamProgress(QProgressBar):
                 (self.param.max - self.param.min) * 100.0)
             except ZeroDivisionError:
                 pass
-            QCursor.setPos(self.origo)
+            self.offset = self.mapFromGlobal(self.origo).y()
+        elif self.param.get_state() not in (self.param.max, self.param.min):
+            self.offset = (self.offset * 2) - e.y()
+        QCursor.setPos(self.origo)
     def mouseReleaseEvent(self, e):
         self.setCursor(QCursor(Qt.ArrowCursor))
         
@@ -603,17 +745,24 @@ class ParamLabel(QLabel):
         
         self.setName(param.label)
         
-        if self.param.get_state():
+        if self.param.get_state() and self.param.type is list:
+            self.setText(self.param.get_state()[0])
+        elif self.param.get_state():
             self.setText(self.param.get_state())
-        
+
         self.connect(self.param, PYSIGNAL("paramUpdate"), self.handle_update)
     
     def handle_update(self, p):
-        if p == self.param.UpdateState:
-            try:
-                self.setText(str(self.param.get_state()))
-            except ValueError:
-                pass
+        if p != self.param.UpdateState:
+            return
+        try:
+            if self.param.type is list:
+                s = self.param.get_state()[0]
+            else:
+                s = self.param.get_state()
+            self.setText(str(s))
+        except ValueError:
+            pass
                 
     def handle_select(self, text):
         self.param.set_state(str(text))
@@ -678,8 +827,10 @@ class PresetComboBox(QHBox):
     
     def delete_preset(self):
         if self.cb.currentItem():
+            item = self.current_preset
             self.cb.removeItem(self.cb.currentItem())
-            self._s.delete_preset(self.current_preset, self.root_param)
+            self._s.delete_preset(item, self.root_param)
+            qApp.emit(PYSIGNAL('deleted_preset'), (self.parent(), self.root_param.full_save_address, item))
             self.current_preset = None
             self.my_hide()
     
@@ -793,10 +944,10 @@ class SnapButtonGroup(QHButtonGroup):
             p = 1
         if  p == 1 and k.issaved(): # if normal click
             dbp( "Snapshot recalled")
-            self.parent().recall_snapshot(click)
+            self.parent().parent().recall_snapshot(click)
         elif p == 3: #if rightclick-leftclick
             dbp("Snapshot saved")
-            self.parent().save_snapshot(click)
+            self.parent().parent().save_snapshot(click)
     
     def setsaved(self, button):
         self.buttons[button].setsaved()
@@ -806,7 +957,7 @@ class PopupLabel(QLabel):
     
     Used in combination with MiniMachine to display the machine name, activate the
     machine on left click, show the preset thing on rightclick and show a menu of
-    available param routings on middle click.
+    available param routings on middle click (not used now).
     """
     
     def __init__(self, parent=None,name=None, fl = 0):
@@ -890,6 +1041,11 @@ class MiniMachine(QVBox):
         self.label = label
         self.address = '/'+label.replace(' ', '_').lower()
         
+        try:
+            qApp.splash.message("Loading %s" % self.label.title())
+        except AttributeError:
+            pass
+        
         #parent of everything.
         self.root_param = Param(address=self.address)
         
@@ -916,11 +1072,25 @@ class MiniMachine(QVBox):
         self.setFrameShape(QFrame.StyledPanel)
         self.setFrameShadow(QFrame.Raised)
         self.tek = PopupLabel(self, label)
-        self.tek.setText(capitalize(label))
+        self.tek.setText(label.title())
         self.clearWState(Qt.WState_Polished)
         
         self.preset_menu = PresetComboBox(self.root_param, self)
-        self.snapbuttons = SnapButtonGroup(self, 4)
+        self.buttonrow = QHBox(self)
+        self.buttonrow.setSpacing(2)
+        self.snapbuttons = SnapButtonGroup(self.buttonrow, 4)
+        self.seqparam = Param(address="/seq")
+        self.root_param.insertChild(self.seqparam)
+        self.seqparam.set_saveable(0)
+        self.seqparam.set_enableosc(0)
+        for i in range(4):
+            p = Param(address="/%d" % i, type=int, min=0, max=2)
+            self.seqparam.insertChild(p)
+            button = ParamThreeStateButton(p, self.buttonrow)
+            button.setMaximumHeight(15)
+            button.setMaximumWidth(20)
+            button.setText("s%d" % i)
+            QToolTip.add(button, "Seq slot %d" % i)
         self.max = 0
         
         self.onoff = Param(address="/onoff", type=bool)
@@ -928,15 +1098,33 @@ class MiniMachine(QVBox):
         self.root_param.insertChild(self.onoff)
         
         #all instances with the same parent gets a signal when a new preset is born
-        self.connect(qApp, PYSIGNAL("new_preset"), self.update_presets)
-        
+        self.connect(qApp, PYSIGNAL("new_preset"), self.add_preset)
+
         self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.update_controls)
         self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.append_preset_to_label)
     
     def create_routing_menu(self):
         self.routing_menu = _ParamRoutingPopup2(self.root_param, self)
         self.routing_menu.create_menu()
-        
+    
+    def add_small_toggles(self, *args):
+        font = QFont()
+        font.setBold(1)
+        for btn in args:
+            param = Param(type=bool, address=btn)
+            self.root_param.insertChild(param)
+            button = ParamPushButton(param, self.buttonrow)
+            button.setMaximumHeight(20)
+            button.setMaximumWidth(20)
+            button.setText(btn[1:3])
+            button.setFont(font)
+            QToolTip.add(button, btn)
+            self.connect(button, SIGNAL("toggled(bool)"), self.small_tgl_change_color)
+    
+    def small_tgl_change_color(self, boo):
+        color = ("black", "red")
+        self.sender().setPaletteForegroundColor(QColor(color[int(boo)]))
+    
     def init_controls(self):
         self.preset_menu.reload_preset_list()
         self.saving.load_preset("init", self.root_param)
@@ -947,10 +1135,10 @@ class MiniMachine(QVBox):
         self.saving.load_preset(current_preset, self.root_param)
         callback()
     
-    def update_presets(self, o, add, label):
+    def add_preset(self, o, add, label):
         if add == self.root_param.full_save_address and o is not self:
             self.preset_menu.insert_item(label)
-        
+    
     def save_snapshot(self, snap):
         """ Save snapshot
         Copies current state to a list of states"""
@@ -985,7 +1173,7 @@ class MiniMachine(QVBox):
         dirty = ""
         if self.preset_menu.dirty == 1:
             dirty = " *"
-        self.tek.setText("".join([capitalize(self.label)," [%s]" % self.preset_menu.current_preset, dirty]))
+        self.tek.setText("".join([self.label.title()," [%s]" % self.preset_menu.current_preset, dirty]))
     
     def on_off(self, arg = None):
         """Turn the bastard on and off. Toggle or set.
@@ -1024,13 +1212,12 @@ class Machine(MiniMachine):
     shownumbers = 0
     mouse_pos = None
 
-    def __init__(self,label,canvas, parent = None, canvaslabel = None, name = None,fl = 0):
+    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
         MiniMachine.__init__(self,label,parent,name,fl)
 
         self.canvas = canvas
         ## make a new canvas set of dots - this could also be done w/ signals...
-        self.canvas.newset(self.label)
-        self.canvaslabel = canvaslabel
+        self.canvas.newset(self)
         #change order or labels if needed
         self.mouseButtons = ['BTN_LEFT', 'BTN_RIGHT', 'BTN_MIDDLE', 'BTN_SIDE', 'BTN_EXTRA']
         self.updateable = [] #list of mouse buttons that's been in use since last gui update
@@ -1051,7 +1238,7 @@ class Machine(MiniMachine):
         self.set_mouse_parameters()
         self.init_mouse_parameters()
         self.generate_label_tuple()
-        
+        self.canvas.setlabels(self)
 
         
         if not name:
@@ -1078,13 +1265,13 @@ class Machine(MiniMachine):
         (and the corresponding variable) has to be redefined in each Machine subclass. 
         These labels are for screen use only, so spaces can be used as you wish."""
         
-        self.label_tuple = (self.label, [
-        ['label1xkkk', 'label1y'],
-        ['label2x', 'label2y'],
-        ['label3x', 'label3y'],
-        ['label4x', 'label4y'],
-        ['label5x', 'label5y']
-        ] )
+        self.label_tuple = (self.label, (
+        ('label1xkkk', 'label1y'),
+        ('label2x', 'label2y'),
+        ('label3x', 'label3y'),
+        ('label4x', 'label4y'),
+        ('label5x', 'label5y')
+        ) )
         
     def set_mouse_parameters(self):
         """ Set current mouse parameters
@@ -1142,10 +1329,8 @@ class Machine(MiniMachine):
             self.__class__.activeMachines.add(self)
             self.update_canvas()
             self.canvas.showset(self.label)
-            if self.__class__.shownumbers:
-                self.canvas.showtext(self.label)
             self.timer.start(40)
-            self.canvaslabel.emit(PYSIGNAL("showMachineLabel"), ((self.label_tuple),))
+            #elf.canvaslabel.emit(PYSIGNAL("showMachineLabel"), ((self.label_tuple),))
             qApp.emit(PYSIGNAL("addRemoveMachine"), (self, 1))
             self.tek.activate()
         
@@ -1153,15 +1338,12 @@ class Machine(MiniMachine):
         self.active = False
         self.__class__.activeMachines.discard(self)
         self.canvas.hideset(self.label)
-        if self.__class__.shownumbers:
-            self.canvas.hidetext(self.label)
         self.timer.stop()
-        self.canvaslabel.emit(PYSIGNAL("hideMachineLabel"), (self.label,))
         self.tek.deactivate()
         qApp.emit(PYSIGNAL("addRemoveMachine"), (self, 0))
     
     def do_show_numbers(self):
-        self.canvas.showtext(self.label)
+        """Show Canvas dot values"""
         for key in self.mouseButtons:
             d = self.mouse_parameters[key]
             try:
@@ -1175,7 +1357,7 @@ class Machine(MiniMachine):
             self.canvas.settext(self.label, self.mouseButtons.index(key), label1, label2)
         
     def do_hide_numbers(self):
-        self.canvas.hidetext(self.label)
+        self.canvas.setlabels(self)
     
     def rawMouseEvents(self, ev): 
         """Routing incoming mouse events to machine parameters
@@ -1194,7 +1376,7 @@ class Machine(MiniMachine):
                 #The 2 code chunks are for handling x and y differently (to invert y data)
                 x = self.mouse_parameters[k]['REL_X']
                 y = self.mouse_parameters[k]['REL_Y']
-                if not self.x_only:
+                if not self.y_only:
                     try:
                         test = cnv[x[0]][0]
                     except KeyError:
@@ -1204,7 +1386,7 @@ class Machine(MiniMachine):
                             min(x[1][1], cnv[x[0]][0] + (ev.axes['REL_X'] / x[1][2])))
                         if test != cnv[x[0]][0]: #if updated
                             params[x[0]].set_state(cnv[x[0]][0])
-                if not self.y_only:
+                if not self.x_only:
                     try:
                         test2 = cnv[y[0]][0]
                     except KeyError:
@@ -1412,9 +1594,9 @@ class _RoutingRow(Param):
         elif self.sender() is self.max_value_param:
             self.controller.max_value = self.max_value_param.get_state()
     
-    def delete(self):
+    def disconnect(self):
         self.controller.set_enabled(0)
-        del self
+        #del self
 
 class ParamRouting(QVBox):
     sources = set()
@@ -1440,7 +1622,7 @@ class ParamRouting(QVBox):
     def init_controls(self, parent):
         for p in parent.queryList("Param"):
             self.__class__.sources.add(p.full_address)
-            qApp.emit(PYSIGNAL("new_param_recv"), (p,))
+            #qApp.emit(PYSIGNAL("new_param_recv"), (p,))
          
         self.routers = []
         
@@ -1540,8 +1722,8 @@ class ParamRouting(QVBox):
             
     def remove_router(self, row):
         self.root_param.removeChild(self.routers[row])
+        self.routers.pop(row).disconnect()
         QTable.removeRow(self.table, row)
-        self.routers[row].delete()
         self.saving.emit(PYSIGNAL("setDirty"), (self.root_param.UpdateState,))
     
 def popup():
@@ -1571,15 +1753,20 @@ if __name__ == "__main__":
     slider2 = ParamSlider(pkuk, kuk)
     
     kuk.root_param.insertChild(pkuk)
+    kuk.add_small_toggles("/foo")
     kuk.init_controls()
+    
+    pp = Param(type=list, address="/foo")
+    ppb = ParamLabel(pp, kuk)
+    pp.set_state(["hoho"])
     
     #prp = _ParamRoutingPopup(w)
     #b = QPushButton("KUK", w)
-    pr = ParamRouting(w)
-    pr.show_table()
+    #pr = ParamRouting(w)
+    #pr.show_table()
     #w.connect(b, SIGNAL("clicked()"), popup)
     
-    pr.init_controls(p)
+    #pr.init_controls(p)
     
     w.show()
     

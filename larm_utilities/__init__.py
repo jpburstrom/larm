@@ -19,7 +19,6 @@ __author__ = "www.ljud.org"
 __license__ = "GNU Lesser General Public License"
 #__all__ = ["oscAPI", "OSC"]
 
-from canvaslabel import Canvasinfo
 from jcanvas import MarioDots
 from jmachine import *
 from jpopuplist import SampleList 

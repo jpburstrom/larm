@@ -53,35 +53,43 @@ class _FigureEditor(QCanvasView):
             self.canvas().update()
 
 
-class MarioDots(QFrame):
+class MarioDots(QHBox):
     
     def __init__(self,parent,name,f=0):
-        QMainWindow.__init__(self,parent,name,f)
+        QHBox.__init__(self,parent,name,f)
         self.canvas=QCanvas(300,300)
         self.canvas.setUpdatePeriod(40)
         self.editor=_FigureEditor(self.canvas,self,name,f)
+        self.canvas.setBackgroundColor(QColor(200, 200, 200))
         self.container = QRect() # the container within
         self.sets = {} #sets of dots
         self.texts = {} #sets of dots
         self.baseX = 0
         self.baseY = 0
-        self.canvas.setBackgroundColor(QColor(150, 200, 240))
-        self.canvas.oldbackground = self.canvas.backgroundColor()
         self.addBorder()
         self.baseX = self.container.width() + self.container.left()
         
+        pen = QPen(QColor("white"), 1, Qt.DotLine)
+        for i in (77,149,221):
+            line = QCanvasLine(self.canvas)
+            line.setPen(pen)
+            line.setPoints(0,i,300,i)
+            line.show()
+            line = QCanvasLine(self.canvas)
+            line.setPen(pen)
+            line.setPoints(i,0,i,300)
+            line.show()
         self.active = 0
     
     def mousePressEvent(self, e):
-        self.canvas.oldbackground = self.canvas.backgroundColor()
-        self.canvas.setBackgroundColor(QColor(240, 240, 240))
+        self.canvas.setBackgroundColor(QColor(150, 200, 240))
         qApp.setOverrideCursor(QCursor(Qt.BlankCursor))
         self.cpos = self.mapToGlobal(e.pos())
         self.emit(PYSIGNAL("canvasActive"), (True,))
         self.active = 1
         
     def mouseReleaseEvent(self, e):
-        self.canvas.setBackgroundColor(self.canvas.oldbackground)
+        self.canvas.setBackgroundColor(QColor(200, 200, 200))
         qApp.restoreOverrideCursor()
         QCursor.setPos(self.cpos)
         self.set_inactive()
@@ -90,35 +98,25 @@ class MarioDots(QFrame):
         self.emit(PYSIGNAL("canvasActive"), (False,))
         self.active = 0
         
-    def newset(self, label):
-        """Init a set of dots"""        
+    def newset(self, obj):
+        """Init a set of dots"""
+        label = obj.label
         if not self.sets.has_key(label): 
             dots = self.initSprites(5)
             self.sets[label] = [dots, True]
             texts = self.initText(5)
             self.texts[label] = [texts, True]
-
             
     def hideset(self, label):
         """Hide a dot set"""
-        for item in self.sets[label][0]:
-            item.hide()
-    
-    def hidetext(self, label):
-        """Hide a dot set"""
-        for item in self.texts[label][0]:
-            item.hide()
+        [item.hide() for item in self.sets[label][0]]
+        [item.hide() for item in self.texts[label][0]]
     
     def showset(self, label):
         """Show a dot set"""
-        for item in self.sets[label][0]:
-            item.show()
+        [item.show() for item in self.sets[label][0]]
         self.emit(PYSIGNAL("emitlabel"), (QString(label),))
-    
-    def showtext(self, label):
-        """Show a dot set"""
-        for item in self.texts[label][0]:
-            item.show()
+        [item.show() for item in self.texts[label][0]]
     
     def emitlabel(self, foo):
         return foo
@@ -138,17 +136,15 @@ class MarioDots(QFrame):
         self.sets[label][0][n].move(x,y)
         self.texts[label][0][n].move(min((210,x+13)),y-2)
     
+    def setlabels(self, obj):
+        [self.texts[obj.label][0][i].setText(\
+            "%s/%s" % n) for i, n in enumerate(obj.label_tuple[1])]
     
     def settext(self, label, n, x, y):
-        
-        if x is not None and y is not None:
+        if not None in (x, y):
             k = "%.3f/%.3f" % (x, y)
-        elif y is not None:
-            k = "%.3f" % y
-        elif x is not None:
-            k = "%.3f" % x
         else:
-            k = ''
+            k = "%.3f" % y or x
         self.texts[label][0][n].setText(k)
     
     def movedots(self, label, dotlist):
@@ -201,28 +197,6 @@ class MarioDots(QFrame):
         self.container = c
         i = QCanvasRectangle( c, self.canvas)
         self.container.moveBy(-8, -8)
-        i.setPen( QPen(QColor(0,0,0), 2) )
+        i.setPen( QPen(QColor("white"), 2) )
         i.setZ(0)
         i.show()
-
-
-if __name__=='__main__':
-    app=QApplication(sys.argv)
-
-    m=MarioDots(None,"pyqt canvas example")
-
-    qApp.setMainWidget(m)
-    m.setCaption("Qt Canvas Example ported to PyQt")
-    if QApplication.desktop().width() > m.width() + 10 and QApplication.desktop().height() > m.height() + 30:
-        m.show()
-    else:
-        m.showMaximized()
-
-    m.show();
-    m.newset("test")
-    m.showset("test")
-    m.showtext("test")
-    m.movedots("test", [(0,0), (30,30), (50,50), (70,70), (90,90)])
-    
-    QObject.connect( qApp, SIGNAL("lastWindowClosed()"), qApp, SLOT("quit()") )
-    app.exec_loop()

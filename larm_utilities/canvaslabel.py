@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+#NOT USED ANYMORE
 
 import sys
 from qt import *
