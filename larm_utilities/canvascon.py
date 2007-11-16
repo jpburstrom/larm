@@ -1,12 +1,6 @@
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
+__version__ = "$Revision$"
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file '/home/johannes/python/sc/canvascon.ui'
-#
-# Created: tis feb 20 12:09:46 2007
-#      by: The PyQt User Interface Compiler (pyuic) 3.16
-#
-# WARNING! All changes made in this file will be lost!
-
 
 import sys
 from qt import *

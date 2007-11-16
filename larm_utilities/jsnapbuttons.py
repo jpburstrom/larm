@@ -1,11 +1,6 @@
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file '/home/johannes/python/sc/snapbuttons.ui'
-#
-# Created: fre feb 23 13:11:34 2007
-#      by: The PyQt User Interface Compiler (pyuic) 3.16
-#
-# WARNING! All changes made in this file will be lost!
+__version__ = "$Revision$"
 
 
 import sys

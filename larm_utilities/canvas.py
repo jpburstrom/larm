@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
+__version__ = "$Revision$"
+# -*- coding: utf-8 -*-
 
 import sys
 from qt import *

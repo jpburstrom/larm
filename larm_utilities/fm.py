@@ -1,4 +1,7 @@
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+__version__ = "$Revision$"
+
 
 # Form implementation generated from reading ui file '/home/johannes/python/sc/larm_utilities/fm.ui'
 #

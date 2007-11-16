@@ -1,4 +1,7 @@
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+__version__ = "$Revision$"
+
 #TODO: update preset menu on sibling delete
 
 import sys

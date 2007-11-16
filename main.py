@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
 #TODO: Perhaps move all osc sending functions to param or similar
 
