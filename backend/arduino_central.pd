@@ -217,8 +217,12 @@
 #X connect 6 0 4 0;
 #X connect 7 0 5 0;
 #X restore 94 104 pd tgl;
+#X obj 23 303;
+#X obj 16 268 print;
+#X floatatom 16 234 5 0 0 0 - - -;
 #X msg 313 13 analogIns 0 \$1 \, analogIns 1 \$1 \, analogIns 2 \$1
-\, analogIns 3 \$1 \, analogIns 4 \$1 \, analogIns 5 \$1;
+\, analogIns 3 \$1 \, analogIns 4 \$1 \, analogIns 5 \$1 \, pwm 8 1
+;
 #X connect 0 0 4 0;
 #X connect 0 0 60 0;
 #X connect 0 1 1 0;
@@ -302,9 +306,10 @@
 #X connect 58 1 59 1;
 #X connect 59 0 15 0;
 #X connect 60 0 30 0;
+#X connect 60 0 64 0;
 #X connect 60 1 31 0;
 #X connect 60 2 32 0;
 #X connect 60 3 46 0;
 #X connect 61 0 28 0;
-#X connect 61 0 62 0;
-#X connect 62 0 13 0;
+#X connect 61 0 65 0;
+#X connect 65 0 13 0;

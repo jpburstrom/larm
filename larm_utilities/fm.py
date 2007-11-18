@@ -136,7 +136,7 @@ class pm7(QWidget):
         self.wavebox = QHBox(self.tab)
         self.wavebox.setGeometry(QRect(130,8,134,61))
                 
-        p = Param(address="/wave", type=int, min=0, max=3)
+        p = Param(address="/seqorder", type=int, min=0, max=3)
         self.saving.root_param.insertChild(p)
         sl = ParamSlider(p, self.wavebox, "Seqorder")
         sl.setPageStep(1)

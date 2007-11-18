@@ -926,9 +926,9 @@ class GuiThread(QMainWindow):
         
         self.stgl_keys = get_keyboard(self)["tgl_keys"]
         
-        #just a silly mapping game
+        #This is somehow related to piano mode
         self.key_mapping_list = [None for i in range(0, 91)] #->z
-        for i in "abcdefghijklmnopqrstuvwxyz":
+        for i in "abcdefghijklmnopqrstuvwxyz0123456789":
             o = eval("".join(["Qt.Key_", i.upper()]))
             self.key_mapping_list[eval("".join(["Qt.Key_", i.upper()]))] = i
         
@@ -964,13 +964,12 @@ class GuiThread(QMainWindow):
         self.cpulabel.setText("%.1f" % msg[0][2])
         
     def deactivate_all(self):
-        for ma in self.machines:
-            ma.deactivate()
-            self.toggle_piano_mode(0)
-    def stop_all(self):
-        for ma in self.machines:
-            ma.on_off(0)
+        [ma.deactivate() for ma in self.machines if ma.active]
+        self.toggle_piano_mode(0)
     
+    def stop_all(self):
+        [ma.on_off(0) for ma in self.machines]
+      
     def toggle_textedit_focus(self, boo):
         if boo:
             self.textedit.setFocus()
@@ -1018,7 +1017,7 @@ class GuiThread(QMainWindow):
             self.dspbutton.unsetPalette()
     
     def toggle_piano_mode(self, arg=None):
-        if self.current_mode == 1 or arg is 0:
+        if self.current_mode == 1 and arg is not 0:
             self.current_mode = 2
             self.canvas.canvas.setBackgroundColor(QColor(255, 150, 150))
         else:
