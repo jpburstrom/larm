@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
-<!-- Project file for project soundcanvas -->
-<!-- Saved: 2007-10-17, 21:57:59 -->
+<!-- Project file for project larm -->
+<!-- Saved: 2007-11-18, 21:39:52 -->
 <!-- Copyright (C) 2007 Johannes Burström, johannes@ljud.org -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -60,9 +60,6 @@
       <Name>saving.py</Name>
     </Source>
     <Source>
-      <Name>test3.py</Name>
-    </Source>
-    <Source>
       <Name>main.py</Name>
     </Source>
     <Source>
@@ -71,52 +68,6 @@
     </Source>
   </Sources>
   <Forms>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>canvaslabel.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>canvaslabel.ui.h</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>popuplist.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>form2.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>snapbuttons.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>routing.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>machine.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>canvascon.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>fm.ui</Name>
-    </Form>
-    <Form>
-      <Name>test3.ui</Name>
-    </Form>
-    <Form>
-      <Name>test4.ui</Name>
-    </Form>
-    <Form>
-      <Dir>larm_utilities</Dir>
-      <Name>notes.ui</Name>
-    </Form>
   </Forms>
   <Translations>
   </Translations>
@@ -134,11 +85,11 @@
     <VcsType>None</VcsType>
   </Vcs>
   <FiletypeAssociations>
-    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
-    <FiletypeAssociation pattern="*.ui" type="FORMS" />
-    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
-    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
     <FiletypeAssociation pattern="*.py" type="SOURCES" />
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
   </FiletypeAssociations>
   <PyLint>
     <PyLintParams>(dp0
@@ -151,35 +102,35 @@ I01
 sS'enableClasses'
 p3
 I01
-sS'enableExceptions'
+sS'enableFormat'
 p4
 I01
-sS'enableFormat'
+sS'txtReport'
 p5
-I01
-sS'dialogReport'
+I00
+sS'enableVariables'
 p6
 I01
-sS'enableMetrics'
+sS'enableDesign'
 p7
 I01
-sS'txtReport'
+sS'dialogReport'
 p8
-I00
-sS'htmlReport'
+I01
+sS'enableMetrics'
 p9
-I00
+I01
 sS'configFile'
 p10
 V/home/johannes/python/sc/lint.cfg
 p11
-sS'enableDesign'
+sS'htmlReport'
 p12
-I01
+I00
 sS'enableBasic'
 p13
 I01
-sS'enableVariables'
+sS'enableExceptions'
 p14
 I01
 sS'enableSimilarities'

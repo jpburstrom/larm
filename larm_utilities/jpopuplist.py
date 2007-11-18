@@ -1,5 +1,5 @@
-# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes BurstrÃ¶m, <johannes@ljud.org>
 __version__ = "$Revision$"
 
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
+# -*- coding: utf-8 -*-
 """A soundfile library/tagger
 
 Scanning directories for soundfiles (wav format), and makes it possible to add
@@ -7,7 +9,7 @@ but should be easy to implement), and set to inactive when removed, so the tag s
 
 Files can also be moved within the directories - the db is saving a unique hash string for every file, so they can be identified. If the hash has changed (eg after editing), the user is informed and may choose to update the hash string.
 """
-# -*- coding: utf-8 -*-
+
 
 import sys, os
 from qt import *

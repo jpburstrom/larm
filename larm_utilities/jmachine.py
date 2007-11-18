@@ -1,5 +1,5 @@
-# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes BurstrÃ¶m, <johannes@ljud.org>
 __version__ = "$Revision$"
 
 #TODO: update preset menu on sibling delete
@@ -1086,10 +1086,11 @@ class MiniMachine(QVBox):
         self.root_param.insertChild(self.seqparam)
         self.seqparam.set_saveable(0)
         self.seqparam.set_enableosc(0)
+        self.seqparams = []
         for i in range(4):
-            p = Param(address="/%d" % i, type=int, min=0, max=2)
-            self.seqparam.insertChild(p)
-            button = ParamThreeStateButton(p, self.buttonrow)
+            self.seqparams.append(Param(address="/%d" % i, type=int, min=0, max=2))
+            self.seqparam.insertChild(self.seqparams[i])
+            button = ParamThreeStateButton(self.seqparams[i], self.buttonrow)
             button.setMaximumHeight(15)
             button.setMaximumWidth(20)
             button.setText("s%d" % i)

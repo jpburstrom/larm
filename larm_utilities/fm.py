@@ -1,5 +1,5 @@
-# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes BurstrÃ¶m, <johannes@ljud.org>
 __version__ = "$Revision$"
 
 
@@ -48,7 +48,6 @@ class FMMiniMachine(MiniMachine):
     def tgl_active(self, arg = None):
         MiniMachine.tgl_active(self, arg)
         #stupid?
-        self.parent().parent().parent().set_piano_mode(self.active)
 
 class pm7(QWidget):
     def __init__(self,parent = None,name = None,fl = 0):
@@ -135,10 +134,16 @@ class pm7(QWidget):
         self.saving.root_param.insertChild(self.op3_param)
         
         self.wavebox = QHBox(self.tab)
-        self.wavebox.setGeometry(QRect(160,8,94,61))
+        self.wavebox.setGeometry(QRect(130,8,134,61))
+                
+        p = Param(address="/wave", type=int, min=0, max=3)
+        self.saving.root_param.insertChild(p)
+        sl = ParamSlider(p, self.wavebox, "Seqorder")
+        sl.setPageStep(1)
+        sl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        #sl.setText(self.__tr("Order"))
         
         self.wavebox2 = QVBox(self.wavebox)
-        self.wavebox2.setGeometry(QRect(160,8,16,61))
         self.squ = QLabel(self.wavebox2)
         self.squ.setPaletteForegroundColor(QColor(85,255,0))
         self.saw = QLabel(self.wavebox2)
@@ -163,6 +168,7 @@ class pm7(QWidget):
         self.wave1.setPageStep(1)
         self.wave2.setPageStep(1)
         self.wave3.setPageStep(1)
+
         
         #Start keyboard
         self.keyboardHi, self.keyboardHi_param = self.generate_keyboard("/keyboardHi", 16, 8)
@@ -258,16 +264,13 @@ class pm7(QWidget):
     
     def activate(self):
         self.saving.activate()
-        self.parent().parent().set_piano_mode(self.saving.active)
     def deactivate(self):
         self.saving.deactivate()
-        self.parent().parent().set_piano_mode(self.saving.active)
     def on_off(self, arg = None):
         self.saving.on_off(arg)
         #This is an unsafe hack.
     def tgl_active(self, arg = None):
         self.saving.tgl_active(arg)
-        self.parent().parent().set_piano_mode(self.saving.active)
         
     def __tr(self,s,c = None):
         return qApp.translate("pm7",s,c)

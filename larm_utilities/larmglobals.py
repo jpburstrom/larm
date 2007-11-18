@@ -1,5 +1,5 @@
-# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes BurstrÃ¶m, <johannes@ljud.org>
 __version__ = "$Revision$"
 
 from qt import QColor, QAction, QKeySequence, QMessageBox
@@ -46,14 +46,14 @@ def get_keyboard(caller):
                     "w" : caller.mlp2.tgl_active,
                     "e" : caller.mlp3.tgl_active,
                     "r" : caller.mlp4.tgl_active,
-                    #"a" : caller.pm7.tgl_active,
+                    "a" : caller.pm7.tgl_active,
                     "s" : caller.grandel.tgl_active,
                     "d" : caller.delay.tgl_active,
                     "f" : caller.combo.tgl_active,
                     "g" : caller.room.tgl_active,
-                    "m" : caller.tgl_x_only,
-                    "n" : caller.tgl_y_only,
-                    "b" : caller.tgl_finetune,
+                    "x" : caller.tgl_x_only,
+                    "z" : caller.tgl_y_only,
+                    "c" : caller.tgl_finetune,
                     },
                 "Alt" : {
                     "q" : caller.mlp1.on_off,
@@ -89,7 +89,8 @@ def get_keyboard(caller):
                 "Esc"   : caller.deactivate_all, 
                 "CapsLock": caller.action_show_numbers,
                 "Space": caller.action_machine_onoff,
-                "CTRL+Esc" : caller.stop_all
+                "CTRL+Esc" : caller.stop_all,
+                "CTRL+V"     : caller.toggle_piano_mode
                 #"F1|F2|F3|F4" : caller.actionSnapshotRecall #these are set
                 #"SHIFT+F1|F2|F3|F4" : caller.actionSnapshotSave #in main script
                 }

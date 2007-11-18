@@ -1,5 +1,5 @@
-# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes BurstrÃ¶m, <johannes@ljud.org>
 __version__ = "$Revision$"
 
 import sys
@@ -56,7 +56,11 @@ class _FigureEditor(QCanvasView):
 
 
 class MarioDots(QHBox):
+    """A display-only canvas with 5 dots.
     
+    Used for displaying data, represented as 5 x/y points on a 
+    canvas. The canvas have sets of dots that can be shown/hidden,
+    and each dot is moved independently."""
     def __init__(self,parent,name,f=0):
         QHBox.__init__(self,parent,name,f)
         self.canvas=QCanvas(300,300)
@@ -84,6 +88,8 @@ class MarioDots(QHBox):
         self.active = 0
     
     def mousePressEvent(self, e):
+        """Mouse press activates canvas"""
+        
         self.canvas.setBackgroundColor(QColor(150, 200, 240))
         qApp.setOverrideCursor(QCursor(Qt.BlankCursor))
         self.cpos = self.mapToGlobal(e.pos())
@@ -91,12 +97,16 @@ class MarioDots(QHBox):
         self.active = 1
         
     def mouseReleaseEvent(self, e):
+        """Mouse release deactivates canvas"""
+        
         self.canvas.setBackgroundColor(QColor(200, 200, 200))
         qApp.restoreOverrideCursor()
         QCursor.setPos(self.cpos)
         self.set_inactive()
     
     def set_inactive(self):
+        """Programatically set canvas inactive"""
+        
         self.emit(PYSIGNAL("canvasActive"), (False,))
         self.active = 0
         
@@ -121,9 +131,11 @@ class MarioDots(QHBox):
         [item.show() for item in self.texts[label][0]]
     
     def emitlabel(self, foo):
+        """Does nothing. I think."""
         return foo
 
     def getscale(self):
+        """Get current canvas scale"""
         return self.container.width(), self.container.height()
 
     def movedot(self,label, n, x = 0, y = 0):
@@ -139,10 +151,12 @@ class MarioDots(QHBox):
         self.texts[label][0][n].move(min((210,x+13)),y-2)
     
     def setlabels(self, obj):
+        """Set labels for a dot set."""
         [self.texts[obj.label][0][i].setText(\
             "%s/%s" % n) for i, n in enumerate(obj.label_tuple[1])]
     
     def settext(self, label, n, x, y):
+        """Silly name. Sets current dot values instead of labels."""
         if not None in (x, y):
             k = "%.3f/%.3f" % (x, y)
         else:

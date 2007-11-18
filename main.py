@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Copyright 2007 Johannes Burstr�m, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 #TODO: Perhaps move all osc sending functions to param or similar
 
 
@@ -633,50 +633,50 @@ class MyMenu(QPopupMenu):
     """The beautiful menu button"""
     def __init__(self, parent, name):
         QPopupMenu.__init__(self, parent, name)
+        p = self.parent()
+        p.recPathAction = QAction("Set rec path", 
+            QKeySequence("F12"), p, "recPathAction")
+        p.recPathAction.addTo(self)
+        p.startTimerAction = QAction("Start timer",
+            QKeySequence("F11"), p, "startTimerAction")
+        p.startTimerAction.addTo(self)
         
-        self.parent().recPathAction = QAction("Set rec path", 
-            QKeySequence("F12"), self.parent(), "recPathAction")
-        self.parent().recPathAction.addTo(self)
-        self.parent().startTimerAction = QAction("Start timer",
-            QKeySequence("F11"), self.parent(), "startTimerAction")
-        self.parent().startTimerAction.addTo(self)
+        p.focusText = QAction("Edit text",
+            QKeySequence("F10"), p, "focusText")
+        p.focusText.addTo(self)
+        p.focusText.setToggleAction(1)
+        p.toggleParamRouting = QAction("Param Routing",
+            QKeySequence("F9"), p, "toggleParamRouting")
+        p.toggleParamRouting.addTo(self)
+        p.toggleLogWindow = QAction("Log Window",
+            QKeySequence("F8"), p, "toggleLogWindow")
+        p.toggleLogWindow.addTo(self)
+        p.toggleArduinoCalib = QAction("Arduino Calibration", QKeySequence("F7"), p, "toggleArduinoCalib")
+        p.toggleArduinoCalib.addTo(self)
+        p.restart_pd = QAction(p, "restart_pd")
+        p.restart_pd.setText("Restart PD")
+        p.restart_pd.addTo(self)
+        p.start_pd = QAction(p, "start_pd")
+        p.start_pd.setText("Start PD")
+        p.start_pd.addTo(self)
+        p.stop_pd = QAction(p, "stop_pd")
+        p.stop_pd.setText("Stop PD")
+        p.stop_pd.addTo(self)
+        p.pd_gui = QAction(p)
+        p.pd_gui.setText("Show PD gui (after restart)")
+        p.pd_gui.setToggleAction(1)
+        p.pd_gui.addTo(self)
+        p.sendctrl = QAction(p, "sendctrl")
+        p.sendctrl.setText("Send all controls")
+        p.sendctrl.addTo(self)
+        p.oscdebug = QAction(p, "oscdebug")
+        p.oscdebug.setText("Debug OSC")
+        p.oscdebug.setToggleAction(1)
+        p.oscdebug.addTo(self)
+        p.quitAction = QAction(self, "quitAction")
+        p.quitAction.setText("Quit")
+        p.quitAction.addTo(self)
         
-        self.parent().focusText = QAction("Edit text",
-            QKeySequence("F10"), self.parent(), "focusText")
-        self.parent().focusText.addTo(self)
-        self.parent().focusText.setToggleAction(1)
-        self.parent().toggleParamRouting = QAction("Param Routing",
-            QKeySequence("F9"), self.parent(), "toggleParamRouting")
-        self.parent().toggleParamRouting.addTo(self)
-        self.parent().toggleLogWindow = QAction("Log Window",
-            QKeySequence("F8"), self.parent(), "toggleLogWindow")
-        self.parent().toggleLogWindow.addTo(self)
-        self.parent().toggleArduinoCalib = QAction("Arduino Calibration", QKeySequence("F7"), self.parent(), "toggleArduinoCalib")
-        self.parent().toggleArduinoCalib.addTo(self)
-        self.parent().restart_pd = QAction(self.parent(), "restart_pd")
-        self.parent().restart_pd.setText("Restart PD")
-        self.parent().restart_pd.addTo(self)
-        self.parent().start_pd = QAction(self.parent(), "start_pd")
-        self.parent().start_pd.setText("Start PD")
-        self.parent().start_pd.addTo(self)
-        self.parent().stop_pd = QAction(self.parent(), "stop_pd")
-        self.parent().stop_pd.setText("Stop PD")
-        self.parent().stop_pd.addTo(self)
-        self.parent().pd_gui = QAction(self.parent())
-        self.parent().pd_gui.setText("Show PD gui (after restart)")
-        self.parent().pd_gui.setToggleAction(1)
-        self.parent().pd_gui.addTo(self)
-        self.parent().sendctrl = QAction(self.parent(), "sendctrl")
-        self.parent().sendctrl.setText("Send all controls")
-        self.parent().sendctrl.addTo(self)
-        self.parent().oscdebug = QAction(self.parent(), "oscdebug")
-        self.parent().oscdebug.setText("Debug OSC")
-        self.parent().oscdebug.setToggleAction(1)
-        self.parent().oscdebug.addTo(self)
-
-        self.parent().quitAction = QAction(self, "quitAction")
-        self.parent().quitAction.setText("Quit")
-        self.parent().quitAction.addTo(self)
 class MyTextEdit(QTextEdit):
     def __init__(self, *args):
         QTextEdit.__init__(self, *args)
@@ -944,18 +944,21 @@ class GuiThread(QMainWindow):
             this_action)
         del key, this_action
         
-        self.actions["snapshot_save"] = []
-        self.actions["snapshot_recall"] = []
+        ##some special shortcuts...
+        
         for i in range(4):
-            self.actions["snapshot_recall"].append(QAction("snap_rc_%d" % i, 
-                QKeySequence("F%d" % (i + 1)), self))
-            self.connect(self.actions["snapshot_recall"][i], SIGNAL("activated()"),
-                self.actionSnapshotRecall)
-        for i in range(4):
-            self.actions["snapshot_save"].append(QAction("snap_sv_%d" % i, 
-                QKeySequence("SHIFT+F%d" % (i + 1)), self))
-            self.connect(self.actions["snapshot_save"][i], SIGNAL("activated()"),
-                self.actionSnapshotSave)
+            q = QAction("snap_rc_%d" % i, QKeySequence("F%d" % (i + 1)), self)
+            self.connect(q, SIGNAL("activated()"), self.actionSnapshotRecall)
+            q.myindex = i
+            q = QAction("snap_sv_%d" % i, QKeySequence("SHIFT+F%d" % (i + 1)), self)
+            self.connect(q, SIGNAL("activated()"), self.actionSnapshotSave)
+            q.myindex = i
+            q = QAction("seq_play_%d" % i, QKeySequence(str(i + 1)), self)
+            self.connect(q, SIGNAL("activated()"), self.actionSeqPlay)
+            q.myindex = i
+            q = QAction("seq_rec_%d" % i, QKeySequence(("!",'"',"#","¤")[i]), self)
+            self.connect(q, SIGNAL("activated()"), self.actionSeqRec)
+            q.myindex = i
                 
     def cpu_report(self, *msg):
         self.cpulabel.setText("%.1f" % msg[0][2])
@@ -963,7 +966,7 @@ class GuiThread(QMainWindow):
     def deactivate_all(self):
         for ma in self.machines:
             ma.deactivate()
-            self.set_piano_mode(0)
+            self.toggle_piano_mode(0)
     def stop_all(self):
         for ma in self.machines:
             ma.on_off(0)
@@ -1014,11 +1017,12 @@ class GuiThread(QMainWindow):
             self.dspbutton.setText("_/ _")
             self.dspbutton.unsetPalette()
     
-    def set_piano_mode(self, boo):
-        self.current_mode = int(boo) + 1 
-        if self.current_mode == 2:
+    def toggle_piano_mode(self, arg=None):
+        if self.current_mode == 1 or arg is 0:
+            self.current_mode = 2
             self.canvas.canvas.setBackgroundColor(QColor(255, 150, 150))
         else:
+            self.current_mode = 1
             self.canvas.canvas.setBackgroundColor(QColor(150, 200, 240))
     
     def action_start_timer(self):
@@ -1040,17 +1044,23 @@ class GuiThread(QMainWindow):
         
     def actionSnapshotRecall(self):
         ac = self.sender()
-        i = self.actions["snapshot_recall"].index(ac)
-        for ma in self.machines:
-            if ma.active:
-                ma.recall_snapshot(i)
-    
+        [ma.recall_snapshot(ac.myindex) for ma in self.machines if ma.active]
+                
     def actionSnapshotSave(self):
         ac = self.sender()
-        i = self.actions["snapshot_save"].index(ac)
-        for ma in self.machines:
-            if ma.active:
-                ma.save_snapshot(i)
+        [ma.save_snapshot(ac.myindex) for ma in self.machines if ma.active]
+                
+    def actionSeqPlay(self):
+        ac = self.sender()
+        i = ac.myindex
+        [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is not 1)
+            ) for ma in self.machines if ma.active]
+    
+    def actionSeqRec(self):
+        ac = self.sender()
+        i = ac.myindex
+        [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is not 2) * 2
+            ) for ma in self.machines if ma.active]
 
     def action_sendctrl(self):
         for p in self.saving.root_param.queryList("Param"):
