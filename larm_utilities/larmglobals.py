@@ -16,7 +16,7 @@ def getgl(key):
     Arg: dict key"""
     
     gl = {
-        "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s.pd"]), #file to launch
+        "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s2.pd"]), #file to launch
         "polltime" : 0.04, #ms, how often mouse gets polled
         "mouse_resolution" : 3000, #some kind of resolution factor, larger = slower
         "osc_address" : "127.0.0.1", 
@@ -46,9 +46,10 @@ def get_keyboard(caller):
                     "w" : caller.mlp2.tgl_active,
                     "e" : caller.mlp3.tgl_active,
                     "r" : caller.mlp4.tgl_active,
-                    "a" : caller.pm7.tgl_active,
-                    "s" : caller.grandel.tgl_active,
-                    "d" : caller.delay.tgl_active,
+                    "t" : caller.pm7.tgl_active,
+                    "a" : caller.grandel.tgl_active,
+                    "s" : caller.delay.tgl_active,
+                    "d" : caller.spectrldly.tgl_active,
                     "f" : caller.combo.tgl_active,
                     "g" : caller.room.tgl_active,
                     "x" : caller.tgl_x_only,
@@ -60,9 +61,10 @@ def get_keyboard(caller):
                     "w" : caller.mlp2.on_off,
                     "e" : caller.mlp3.on_off,
                     "r" : caller.mlp4.on_off,
-                    "a" : caller.pm7.on_off,
-                    "s" : caller.grandel.on_off,
-                    "d" : caller.delay.on_off,
+                    "t" : caller.pm7.on_off,
+                    "a" : caller.grandel.on_off,
+                    "s" : caller.delay.on_off,
+                    "d" : caller.spectrldly.on_off,
                     "f" : caller.combo.on_off,
                     "g" : caller.room.on_off,
                  }
@@ -75,15 +77,18 @@ def get_keyboard(caller):
                 "CTRL+W" : caller.mlp2.on_off,
                 "CTRL+E" : caller.mlp3.on_off,
                 "CTRL+R" : caller.mlp4.on_off,
-                "<"     : caller.pm7.toggle_page,
-                "SHIFT+A" : caller.pm7.tgl_active,
-                "SHIFT+S" : caller.grandel.tgl_active,
-                "SHIFT+D" : caller.delay.tgl_active,
+                "Ctrl+Tab"     : caller.pm7.toggle_page,
+                "Tab"     : caller.switch_middle_stack,
+                "SHIFT+T" : caller.pm7.tgl_active,
+                "SHIFT+A" : caller.grandel.tgl_active,
+                "SHIFT+S" : caller.delay.tgl_active,
+                "SHIFT+D" : caller.spectrldly.tgl_active,
                 "SHIFT+F" : caller.combo.tgl_active,
                 "SHIFT+G" : caller.room.tgl_active,
-                "CTRL+A" : caller.pm7.on_off,
-                "CTRL+S" : caller.grandel.on_off,
-                "CTRL+D" : caller.delay.on_off,
+                "CTRL+T" : caller.pm7.on_off,
+                "CTRL+A" : caller.grandel.on_off,
+                "CTRL+S" : caller.delay.on_off,
+                "CTRL+D" : caller.spectrldly.on_off,
                 "CTRL+F" : caller.combo.on_off,
                 "CTRL+G" : caller.room.on_off,
                 "Esc"   : caller.deactivate_all, 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project larm -->
-<!-- Saved: 2007-11-18, 21:39:52 -->
-<!-- Copyright (C) 2007 Johannes Burström, johannes@ljud.org -->
+<!-- Saved: 2008-01-02, 13:36:21 -->
+<!-- Copyright (C) 2008 Johannes Burström, johannes@ljud.org -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
   <UIType>Qt</UIType>
@@ -66,6 +66,10 @@
       <Dir>larm_utilities</Dir>
       <Name>xmlsave.py</Name>
     </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>tag_editor.py</Name>
+    </Source>
   </Sources>
   <Forms>
   </Forms>
@@ -85,10 +89,10 @@
     <VcsType>None</VcsType>
   </Vcs>
   <FiletypeAssociations>
-    <FiletypeAssociation pattern="*.py" type="SOURCES" />
     <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
-    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
     <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
     <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
   </FiletypeAssociations>
   <PyLint>
@@ -102,37 +106,37 @@ I01
 sS'enableClasses'
 p3
 I01
-sS'enableFormat'
+sS'enableExceptions'
 p4
 I01
-sS'txtReport'
+sS'enableFormat'
 p5
-I00
-sS'enableVariables'
-p6
-I01
-sS'enableDesign'
-p7
-I01
-sS'dialogReport'
-p8
 I01
 sS'enableMetrics'
-p9
+p6
 I01
+sS'dialogReport'
+p7
+I01
+sS'enableVariables'
+p8
+I01
+sS'htmlReport'
+p9
+I00
 sS'configFile'
 p10
 V/home/johannes/python/sc/lint.cfg
 p11
-sS'htmlReport'
+sS'enableDesign'
 p12
-I00
+I01
 sS'enableBasic'
 p13
 I01
-sS'enableExceptions'
+sS'txtReport'
 p14
-I01
+I00
 sS'enableSimilarities'
 p15
 I01

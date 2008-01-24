@@ -1,10 +1,10 @@
-#N canvas 0 15 661 716 10;
+#N canvas 0 15 610 716 10;
 #X obj 87 35 inlet OSC;
 #X obj 95 203 outlet;
-#X obj 86 78 simple-osc-seq /0;
-#X obj 106 98 simple-osc-seq /1;
-#X obj 126 118 simple-osc-seq /2;
-#X obj 146 138 simple-osc-seq /3;
+#X obj 86 78 simple-osc-seq /n0;
+#X obj 106 98 simple-osc-seq /n1;
+#X obj 126 118 simple-osc-seq /n2;
+#X obj 146 138 simple-osc-seq /n3;
 #X connect 0 0 2 0;
 #X connect 0 0 3 0;
 #X connect 0 0 4 0;

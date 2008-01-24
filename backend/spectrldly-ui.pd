@@ -1,0 +1,133 @@
+#N canvas 0 15 610 716 10;
+#X floatatom 30 77 5 0 1 0 - - -;
+#X obj 143 404 s \$0-osc;
+#X floatatom 30 97 5 0 1 0 - - -;
+#X obj 143 424 s \$0-osc;
+#X floatatom 30 117 5 0 1 0 - - -;
+#X obj 143 444 s \$0-osc;
+#X floatatom 30 137 5 0 1 0 - - -;
+#X obj 143 464 s \$0-osc;
+#X floatatom 30 157 5 0 1 0 - - -;
+#X obj 143 484 s \$0-osc;
+#X floatatom 30 177 5 0 1 0 - - -;
+#X obj 143 504 s \$0-osc;
+#X floatatom 30 197 5 0 1 0 - - -;
+#X obj 143 524 s \$0-osc;
+#X floatatom 30 217 5 0 1 0 - - -;
+#X obj 143 544 s \$0-osc;
+#X floatatom 30 237 5 0 1 0 - - -;
+#X obj 143 564 s \$0-osc;
+#X floatatom 30 257 5 0 1 0 - - -;
+#X obj 143 584 s \$0-osc;
+#X floatatom 30 277 5 0 1 0 - - -;
+#X obj 143 604 s \$0-osc;
+#X text 68 76 Vol: Main volume;
+#X text 237 395 A spectral delay \, built from a patch by Johannes
+Kreisler and Orm Finnendahl. The incoming sound is fft-analyzed \,
+and for every bin a specific delay time is read from a table. To generate
+the different delay times \, you have a basic cos function running
+across the table \, with an amp offset (/delay_time) \, a frequency
+(/time_mod) \, a quantization (mod_quant) \, a randomizer per every
+quantized portion of the signal (/mod_rand). The signal is regenerated
+every n block (/mod_regen_time) and the feedback is calculated partly
+by a main throttle (/feedback) and partly by some strange inversion-of-mod/freq
+algorithm i can't remember.;
+#X text 238 540 There's also a strange notch filter. /notch_freq is
+the \, yes \, frequency \, and /notch_q is the Q. larger value = less
+bandwidth.;
+#X obj 425 73 eztabplay;
+#X obj 384 232 dac~;
+#X obj 381 180 spectrldly /foo;
+#X obj 468 153 r \$0-osc;
+#X text 68 96 Pan spread;
+#X text 68 116 Delay Time;
+#X text 68 136 Delay Time mod;
+#X text 68 156 Delay time mod quantization;
+#X text 68 176 Delay time mod randomizer;
+#X text 68 196 Delay time mod regeneration time;
+#X text 68 216 Feedback;
+#X text 68 236 Notch Frequency;
+#X text 68 256 Notch Q;
+#X text 67 276 Phase offset;
+#X msg 30 387 /vol \$1;
+#X msg 30 407 /pan_spread \$1;
+#X msg 30 427 /delay_time \$1;
+#X msg 30 447 /time_mod \$1;
+#X msg 30 467 /mod_quant \$1;
+#X msg 30 487 /mod_rand \$1;
+#X msg 30 507 /mod_regen_time \$1;
+#X msg 30 527 /feedback \$1;
+#X msg 30 547 /notch_freq \$1;
+#X msg 30 567 /notch_q \$1;
+#X obj -5 18 loadbang;
+#X obj -5 80 0.8;
+#X obj -5 100 0.8;
+#X obj -5 140 0.8;
+#X obj -5 180 0.8;
+#X obj -5 120 0.5;
+#X obj -5 60 0.6;
+#X obj -5 160 0.3;
+#X obj -5 200 0.6;
+#X msg 30 587 /phase_offset \$1;
+#X obj -5 240 1;
+#X obj -5 220 0.12;
+#X obj -5 260 0.37;
+#X text 240 647 All values are 0-1. Johannes Burström 2008;
+#X text 238 586 Phase offset: the signal described above is offset
+in left channel \, so the delay times become different in left and
+right channel. You can use /pan_spread to make the stereo spread less
+obvious. (0=mono).;
+#X msg 143 348 /onoff 1;
+#X text 113 331 START HERE vvv;
+#X connect 0 0 39 0;
+#X connect 2 0 40 0;
+#X connect 4 0 41 0;
+#X connect 6 0 42 0;
+#X connect 8 0 43 0;
+#X connect 10 0 44 0;
+#X connect 12 0 45 0;
+#X connect 14 0 46 0;
+#X connect 16 0 47 0;
+#X connect 18 0 48 0;
+#X connect 20 0 58 0;
+#X connect 25 0 27 0;
+#X connect 25 0 27 1;
+#X connect 25 0 26 0;
+#X connect 25 0 26 1;
+#X connect 27 0 26 0;
+#X connect 27 1 26 1;
+#X connect 28 0 27 2;
+#X connect 39 0 1 0;
+#X connect 40 0 3 0;
+#X connect 41 0 5 0;
+#X connect 42 0 7 0;
+#X connect 43 0 9 0;
+#X connect 44 0 11 0;
+#X connect 45 0 13 0;
+#X connect 46 0 15 0;
+#X connect 47 0 17 0;
+#X connect 48 0 19 0;
+#X connect 49 0 50 0;
+#X connect 49 0 51 0;
+#X connect 49 0 52 0;
+#X connect 49 0 53 0;
+#X connect 49 0 54 0;
+#X connect 49 0 55 0;
+#X connect 49 0 56 0;
+#X connect 49 0 57 0;
+#X connect 49 0 59 0;
+#X connect 49 0 60 0;
+#X connect 49 0 61 0;
+#X connect 50 0 2 0;
+#X connect 51 0 4 0;
+#X connect 52 0 8 0;
+#X connect 53 0 12 0;
+#X connect 54 0 6 0;
+#X connect 55 0 0 0;
+#X connect 56 0 10 0;
+#X connect 57 0 14 0;
+#X connect 58 0 21 0;
+#X connect 59 0 18 0;
+#X connect 60 0 16 0;
+#X connect 61 0 20 0;
+#X connect 64 0 1 0;

@@ -17,8 +17,8 @@ from larm_utilities import *
 
 class MouseLooper(Machine):
     """GUI for the looping machine. """
-    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
-        Machine.__init__(self,label, canvas, parent, name,fl)
+    def __init__(self,label,canvas, parent = None, name = None):
+        Machine.__init__(self,label, canvas, parent, name)
                 
         self.buffer_param = Param(type=list, address="/buffer")
         self.buffer_param.set_saveable(0)
@@ -26,6 +26,7 @@ class MouseLooper(Machine):
         
         self.smplabel = ParamLabel(self.buffer_param, self)
         self.smplabel.setAlignment(QLabel.AlignRight)
+        self.setAcceptDrops(1)
         self.sample_loaded = None
         self.sample_path = None
         
@@ -72,9 +73,9 @@ class MouseLooper(Machine):
         else:
             self.smplabel.setPaletteForegroundColor(QColor('gold'))
     
-    def load_sample(self, lst, dest):
+    def load_sample(self, lst):
         self.sample_path = path
-        if dest == self.label and self.sample_loaded != lst:
+        if self.sample_loaded != lst:
             self.buffer_param.set_state(lst)
             self.sample_loaded = lst
     
@@ -114,10 +115,30 @@ class MouseLooper(Machine):
             {'REL_X' : ("/quantizeamt", [0.0, 1.0]),
                 'REL_Y' : ("/qspeed", [-1.0, 1.0]) },
         }
+    def dragEnterEvent(self, ev):
+        try:
+            ev.source().current
+        except AttributeError:
+            pass
+        else:
+            self.highlight(1)
+            ev.accept()
+    def dragLeaveEvent(self, ev):
+        self.highlight(0)
+        
+    def dropEvent(self, ev):
+        li = ev.source().current
+        self.highlight(0)
+        self.load_sample(li)
+    def highlight(self,boo):
+        if boo:
+            self.setPaletteBackgroundColor(QColor(75,50,50))
+        else:
+            self.setPaletteBackgroundColor(QColor(50,50,50))
 
 class LabelSlider(QHBox):
     """Just a slider with a label beside it."""
-    def __init__(self, param, label, parent = None, name = None,fl = 0):
+    def __init__(self, param, label, parent = None, name = None):
         QHBox.__init__(self, parent, name)
         if name is None:
             name = label
@@ -140,8 +161,8 @@ class LabelSlider(QHBox):
             
 class Grandel(Machine):
     """GUI for the granulator"""
-    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None):
+        Machine.__init__(self,label,canvas, parent,name)
         
         self.container = QHBox(self)
         self.sliderbox = QVBox(self.container)
@@ -239,8 +260,8 @@ class Grandel(Machine):
 
 class Delay(Machine):
     """GUI for the delay"""
-    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None):
+        Machine.__init__(self,label,canvas, parent,name)
         
         self.mastertempo = Param(type=float, address="/master_tempo", min=0, max=32)
         self.mastertempo_sl = LabelSlider(self.mastertempo, "Master Tempo", self)
@@ -275,10 +296,48 @@ class Delay(Machine):
                 'REL_Y' : ("", [0.0, 100.0]) },
         }
 
+class Spectrldly(Machine):
+    """GUI for the delay"""
+    def __init__(self,label,canvas, parent = None, name = None):
+        Machine.__init__(self,label,canvas, parent,name)
+        
+        p = Param(type=float, address="/pan_spread", min=0, max=1)
+        sl = ParamProgress(p, self)
+        self.root_param.insertChild(p)
+    
+    def generate_label_tuple(self):
+        self.label_tuple = (self.label, (
+        ('Time mod', 'Delay Time'),
+        ('Mod Quant', 'Feedback'),
+        ('Mod regen time', 'Mod rand'),
+        ('Notch Freq', 'Notch Q'),
+        ('Phase Offset', 'Volume')
+        ) )
+
+    def set_mouse_parameters(self):
+        self.mouse_parameters =   {
+        self.mouseButtons[0] :
+            {'REL_X' : ("/time_mod", [0.0, 1.0]),
+                'REL_Y' : ("/delay_time", [0.0, 1.0]) },
+        self.mouseButtons[1]:
+            {'REL_X' : ("/mod_quant", [0.0, 1.0]),
+                'REL_Y' : ("/feedback", [0.0, 1.0]) },
+        self.mouseButtons[2] :
+            {'REL_X' : ("/mod_regen_time", [0.0, 1.0]),
+                'REL_Y' : ("/mod_rand", [0.0, 1.0]) },
+        self.mouseButtons[3]:
+            {'REL_X' : ("/notch_freq", [0.0, 1.0]),
+                'REL_Y' : ("/notch_q", [0.0, 1.0]) },
+        self.mouseButtons[4]:
+            {'REL_X' : ("/phase_offset", [0.0, 1.0]),
+                'REL_Y' : ("/vol", [0.0, 1.0]) },
+        }
+
+
 class Room(Machine):
     """GUI for the room/reverb"""
-    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None):
+        Machine.__init__(self,label,canvas, parent,name)
     
     def generate_label_tuple(self):
         self.label_tuple = (self.label, (
@@ -310,8 +369,8 @@ class Room(Machine):
 
 class Combo(Machine):
     """GUI for the comb filter"""
-    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
-        Machine.__init__(self,label,canvas, parent,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None):
+        Machine.__init__(self,label,canvas, parent,name)
         
         self.sliderbox = QVBox(self)
         self.controls = []
@@ -592,11 +651,12 @@ class MyArduino(MiniMachine):
 class MyRouting(Routing):
     """The Routing UI.
     A Grid of sliders, without connecting machines to itself."""
-    def __init__(self, row, col, routeToSelf = True, parent = None,name = None,fl = 0):
-        Routing.__init__(self, row, col, routeToSelf = True, parent = parent,name = name,fl = 0)
+    def __init__(self, parent = None,name = None):
         
-        self.osc_labels = ["/a4loop-1", "/a4loop-2", "/a4loop-3", "/a4loop-4", 
-            "/grandel-1", "/delay-1", "/combo-1", "/pm7", 
+        Routing.__init__(self, 11, 5, True, parent = parent,name = name)
+        
+        self.osc_labels = ["/a4loop-1", "/a4loop-2", "/a4loop-3", "/a4loop-4",
+            "/pm7", "/grandel-1", "/delay-1", "/spectrldly", "/combo-1", 
             "/adc12", "/adc3"]
         
         self.saving = MiniMachine("routing",self,"routingsave")
@@ -619,15 +679,16 @@ class MyRouting(Routing):
         self.table1.move(QPoint(0, 50))
         
         
-        labels = ["Loop 1", "Loop 2", "Loop 3", "Loop 4", 
-            "Grandel", "Delay", "Combo", "pm7", "adc12", "adc3"]
+        labels = ["Loop 1", "Loop 2", "Loop 3", "Loop 4", "pm7",
+            "Grandel", "Delay", "Spectrldly", "Combo", "adc12", "adc3"]
         self.set_row_labels(QStringList.fromStrList(labels))
-        labels = ["Room", "Grandel", "Delay", "Combo", "dac3"]
+        labels = ["Room", "Grandl", "Delay", "Combo", "Spctrl"]
         self.set_col_labels(QStringList.fromStrList(labels))
         
         #This removes the slider which connects machines to itself
-        for cl in range(1, 4):
-            self.clear_cell(cl+3, cl)
+        l = [5, 6, 8, 7]
+        for cl in range(4):
+            self.clear_cell(l[cl], cl+1)
 
 class MyMenu(QPopupMenu):
     """The beautiful menu button"""
@@ -741,17 +802,49 @@ class GuiThread(QMainWindow):
 ##MIDDLE RACK
 ######################################################
 
-        cc = QVBox(self)
-        cc.setGeometry(320, 5, 330, 470)
-        cc.setSpacing(2)
-        
-        brack = QHBox(cc)
+        self.middle_rack = QVBox(self)
+        self.middle_rack.setGeometry(320, 5, 330, 700)
+        self.middle_rack.setSpacing(2)
+        brack = QHBox(self.middle_rack)
         QHBox(brack) #dummy
         self.dspbutton = QPushButton("_/ _", brack)
         self.dspbutton.setToggleButton(1)
         QHBox(brack) #dummy
-        QHBox(cc)
-        self.canvas = MarioDots(cc, "Hej hej")
+        ##RUGAR crap
+        diskplayparams = []
+        pop = QVBox(self.middle_rack)
+        brack = QHBox(pop)
+        pop.setPaletteBackgroundColor(QColor(55,0,0))
+        p = Param(address="/diskplayvol", type=float, min=0, max=100)
+        diskplayparams.append(p)
+        ctl = ParamProgress(p, brack)
+        brack.setStretchFactor(ctl, 2) 
+        p = Param(address="/diskplaynext", type=Bang)
+        diskplayparams.append(p)
+        ctl = ParamPushButton(p, brack)
+        brack.setStretchFactor(ctl, 1) 
+        ctl.setText("Play (next)")
+        p = Param(address="/diskplaystop", type=Bang)
+        diskplayparams.append(p)
+        ctl = ParamPushButton(p, brack)
+        brack.setStretchFactor(ctl, 1) 
+        ctl.setText("Stop")
+        p = Param(address="/diskplayreset", type=Bang)
+        diskplayparams.append(p)
+        ctl = ParamPushButton(p, brack)
+        brack.setStretchFactor(ctl, 1) 
+        ctl.setText("Reset")
+        p = Param(address="/diskplayseek", type=float)
+        diskplayparams.append(p)
+        ctl = ParamProgress(p, pop)
+        p = Param(address="/diskplaystatus", type=str)
+        diskplayparams.append(p)
+        label = ParamLabel(p, pop)
+        label.setText("This is the disk player")
+        
+        self.middle_stack = QWidgetStack(self.middle_rack)
+        self.canvas = MarioDots(self.middle_stack, "Hej hej")
+        self.middle_stack.addWidget(self.canvas, 0)
         
         #this should be before samplers(?)
         self.urack = QVBox(self)
@@ -796,6 +889,10 @@ class GuiThread(QMainWindow):
         self.saving = MainMachine("Main", self.narrowbox, "mainsave")
         #self.saving.setFixedHeight(150)
         
+        ##RUGAR crap
+        [self.saving.root_param.insertChild(p) for p in diskplayparams]
+        
+        
         self.textedit = MyTextEdit(self.narrowbox)
         self.textedit.setPaletteBackgroundColor(QColor(50,50,50))
         self.textedit.setPaletteForegroundColor(QColor("gray"))
@@ -830,8 +927,10 @@ class GuiThread(QMainWindow):
         self.rec = ArrayRecorder(self.samplelist, self.narrowbox)
         self.rec.setFixedHeight(300)
 
-        self.routing = MyRouting(10, 5, True, self)
-        self.routing.setGeometry(330, 475, 315, 250)
+        self.routing = MyRouting(self.middle_stack)
+        self.middle_stack.addWidget(self.routing, 1)
+        self.middle_stack.adjustSize()
+        #self.routing.setGeometry(330, 475, 315, 250)
         self.machines.append(self.routing.saving)
 
         self.rack1 = QVBox(self)
@@ -846,10 +945,13 @@ class GuiThread(QMainWindow):
         self.delay = Delay("Delay", self.canvas, self.rack1)
         self.machines.append(self.delay)
         
-        self.combo = Combo("Combo", self.canvas, self.rack1)
+        self.spectrldly = Spectrldly("SpectrlDly", self.canvas, self.rack1)
+        self.machines.append(self.spectrldly)
+        
+        self.combo = Combo("Combo", self.canvas, self.middle_rack)
         self.machines.append(self.combo)
 
-        self.room = Room("Room", self.canvas, self.rack1)
+        self.room = Room("Room", self.canvas, self.middle_rack)
         self.machines.append(self.room)
         
         self.my_arduino = MyArduino(self)
@@ -864,9 +966,12 @@ class GuiThread(QMainWindow):
             if ma is not self.param_routing.saving:
                 qApp.splash.message("Initing %s" % ma.label.title())
                 ma.init_controls()
+                ma.show()
         self.saving.init_controls()
         qApp.splash.message("Initing Param routing")
         self.param_routing.init_controls(self.saving.root_param)
+        self.pm7.show()
+        
 ######################################################
 ##EPILOGUE
 ######################################################
@@ -979,6 +1084,11 @@ class GuiThread(QMainWindow):
             
     def show_param_echo(self, *things):
         self.status_paramlabel.setText("%s: %.2f" % things)
+    
+    def switch_middle_stack(self):
+        m = self.middle_stack
+        print (m.id(m.visibleWidget()) * -1) + 1
+        m.raiseWidget((m.id(m.visibleWidget()) * -1) + 1)
     
     def toggle_log_window(self):
         if not self.logwindow.isShown():

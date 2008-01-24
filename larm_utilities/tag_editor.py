@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 # -*- coding: utf-8 -*-
+# Copyright 2007 Johannes Burström, <johannes@ljud.org>
 """A soundfile library/tagger
 
 Scanning directories for soundfiles (wav format), and makes it possible to add
@@ -10,6 +10,7 @@ but should be easy to implement), and set to inactive when removed, so the tag s
 Files can also be moved within the directories - the db is saving a unique hash string for every file, so they can be identified. If the hash has changed (eg after editing), the user is informed and may choose to update the hash string.
 """
 
+from __future__ import with_statement
 
 import sys, os
 from qt import *
@@ -20,7 +21,7 @@ import wave
 
 import FileHasher
 
-DB_PATH = "/home/johannes/myprojects/larm/trunk/audiodb/data.db"
+DB_PATH = "/home/johannes/myprojects/larm/trunk/larm_utilities/data.db"
 FILEPATHS = ["/home/johannes/samples"]  # Change this to your audio file directories
 
 class dbSoundFiles(SQLObject):
@@ -30,7 +31,13 @@ class dbSoundFiles(SQLObject):
     size = IntCol(default=0)
     channels = IntCol(default=0)
     samplerate = IntCol(default=0)
+    popularity = IntCol(default=None)
     tags = RelatedJoin('dbTags')
+    spectral_centroid = FloatCol(default=None)
+    spectral_flatness = FloatCol(default=None)
+    onsets = IntCol(default=None)
+    onset_cues = StringCol(default=None)
+    power = FloatCol(default=None)
 
 class dbTags(SQLObject):
     name = StringCol()
@@ -42,7 +49,6 @@ class TagEditor(QMainWindow):
         QMainWindow.__init__(self,parent,name,fl)
         
         self.filepaths = FILEPATHS
-        
         
         self.menu = QMenuBar(self)
         self.menu.insertItem( "Quit", qApp, SLOT("quit()"), QKeySequence("CTRL+Key_Q") );
@@ -68,7 +74,8 @@ class TagEditor(QMainWindow):
         
         self.samples_box = QListBox(self.frame5,"samples_box")
         
-        self.rescan_button = QPushButton("Rescan Directory", self.frame5)
+        self.rescan_button = QPushButton("Full Rescan", self.frame5)
+        self.analyze_button = QPushButton("Re-analyze files", self.frame5)
 
         self.frame3 = QVBox(self.mainbox,"frame3")
         self.mainbox.setStretchFactor(self.frame3, 1)
@@ -113,6 +120,7 @@ class TagEditor(QMainWindow):
         self.connect(self.playbtn, SIGNAL("pressed()"), self.play_soundfile)
         self.connect(self.stopbtn, SIGNAL("pressed()"), self.stop_soundfile)
         self.connect(self.rescan_button, SIGNAL("pressed()"), self.rescandirectory)
+        self.connect(self.analyze_button, SIGNAL("pressed()"), self.reanalyze)
         
     def switch_tag_placement(self, index):
         tag = dbTags.select(dbTags.q.name == str(self.sender().text(index)))[0]
@@ -168,7 +176,6 @@ class TagEditor(QMainWindow):
         self.samples_box.sort()
     
     def change_current_file(self, string):
-        self.currentObj = dbSoundFiles.selectBy(fullPath=str(string), active=True)
         if not self.currentObj.count():
             return
         tags = self.currentObj[0].tags
@@ -188,7 +195,9 @@ class TagEditor(QMainWindow):
         size = "0.0 s"
         if co.samplerate:
             size = "%.1f s" % (float(co.size) / float(co.samplerate))
-        self.status.message("%s: %d Hz, %s, %s" % (co.fullPath, co.samplerate, ch, size))
+        self.status.message("%s: %d Hz, %s, %s | sc:%s | sfm:%s | o:%s | rms:%s" %
+            (co.fullPath, co.samplerate, ch, size, co.spectral_centroid, 
+                co.spectral_flatness, co.onsets, co.power))
         qApp.clipboard().setText(co.fullPath, QClipboard.Selection)
         
         
@@ -258,7 +267,8 @@ class TagEditor(QMainWindow):
                     yield os.path.join(path, filename)
     
     def limit_to_new(self, db, files):
-        return [files.remove(p.fullPath) for p in db if p.fullPath in files]
+        [files.remove(p.fullPath) for p in db if p.fullPath in files]
+        return files
         
     def scan_for_new_files(self):
         self.status.message("Scanning for new files...")
@@ -274,7 +284,7 @@ class TagEditor(QMainWindow):
         files = []
         [files.append(f) for f in gen]
         if limitcallback:
-            limitcallback(existingfiles, files)
+            files = limitcallback(existingfiles, files)
         n = len(files)
         progress = QProgressDialog("%d files found. Hashing..." % n, "Cancel", n, self)
         
@@ -292,11 +302,17 @@ class TagEditor(QMainWindow):
         n = existingfiles.count()
         i = 0
         progress = QProgressDialog("Checking against database...", "Cancel", n, self)
+        fta = {}
         for file in existingfiles: 
             if file.hash in filehashdict: 
                 file.active = True 
                 file.fullPath = filehashdict[file.hash]
                 self.inspect_wave(file)
+                fta[file.fullPath] = file
+                if len(fta) == 15:
+                    print "analyzing"
+                    self.analyze(fta)
+                    fta = {}
                 filehashdict.pop(file.hash) 
             elif file.hash not in filehashdict and not limitcallback:
                 file.active = False
@@ -305,11 +321,14 @@ class TagEditor(QMainWindow):
             i+=1
             progress.setProgress(i)
             qApp.processEvents()
+        if fta:
+            self.analyze(fta)
         progress.setProgress(n)
         
         n = len(filehashdict)
         i = 0
         progress = QProgressDialog("Inserting new files", "Cancel", n, self)
+        fta = {}
         for hash, path in filehashdict.items(): # insert new files into db
             if progress.wasCanceled():
                 return
@@ -319,12 +338,19 @@ class TagEditor(QMainWindow):
                 "&No", "&Yes"):
                 selected[0].hash = hash
                 selected[0].active = True
+                fileObj = selected[0]
             else:
                 fileObj = dbSoundFiles(fullPath=path, hash=hash, active=True)
-                self.inspect_wave(fileObj)
+            fta[fileObj.fullPath] = fileObj
+            if len(fta) == 15:
+                self.analyze(fta)
+                fta = {}
+            self.inspect_wave(fileObj)
             i+=1
             progress.setProgress(i)
             qApp.processEvents()
+        if fta:
+            self.analyze(fta)
         progress.setProgress(n)
         self.tags_cb.setCurrentText(QString("@UNTAGGED"))
         self.filter_soundfiles("@UNTAGGED")
@@ -344,7 +370,55 @@ class TagEditor(QMainWindow):
                 "There seems to be something wrong with this file: <br> %s <br>   Tage couldn't extract all the data he needs. Please check it.                File is deactivated for now." % file)
                 sqlobj.active = False
             f.close()
-        
+    
+    def analyze(self, sqlobj_dict):
+        infile = "/tmp/files_to_analyze"
+        outfile = "/tmp/analyzed_files"
+        progress = QProgressDialog("Analyzing %d files..." % len(sqlobj_dict), 
+            "Cancel", 100, self)
+        f = file(infile, "w")
+        [f.write(s + "\n") for s, obj in sqlobj_dict.items()]
+        progress.setProgress(10)
+        f.close()
+        os.system(" ".join(["xterm -e featex", infile, outfile]))
+        progress.setProgress(90)
+        first = True
+        with file(outfile, "r") as f:
+            for line in f:
+                if first:
+                    first = False
+                    continue
+                l = [lin.strip() for lin in line.split("|")]
+                obj = sqlobj_dict[l[0]]
+                obj.spectral_centroid = float(l[1])
+                obj.spectral_flatness = float(l[2])
+                obj.onsets = int(l[3])
+                obj.onset_cues = l[5]
+                obj.power = float(l[4])
+        progress.setProgress(100)
+    
+    def reanalyze(self):
+        existingfiles = dbSoundFiles.select()
+        n = existingfiles.count()
+        i = 0
+        progress = QProgressDialog("Checking against database...", "Cancel", n, self)
+        fta = {}
+        for file in existingfiles:
+            if file.active:
+                self.inspect_wave(file)
+                fta[file.fullPath] = file
+                if len(fta) == 15:
+                    self.analyze(fta)
+                    fta = {}
+            if progress.wasCanceled():
+                return
+            i+=1
+            progress.setProgress(i)
+            qApp.processEvents()
+        if fta:
+            self.analyze(fta)
+        progress.setProgress(n)
+                
     def languageChange(self):
         self.setCaption(self.__tr("Tag Editor"))
         self.textLabel1_3.setText(self.__tr("Sound files"))
@@ -363,11 +437,13 @@ if __name__ == "__main__":
         psyco.profile()
     except ImportError:
         QMessageBox.information(None, "Tage", "Can't import psyco. Install it to make it go fast.")
-    QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
+##    QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
     w = TagEditor()
     a.setMainWidget(w)
     w.show()
-    #QTimer.singleShot(0, w.scan_for_new_files)
+##    w.analyze()
+##    QTimer.singleShot(0, w.scan_for_new_files)
     a.exec_loop()
-    if w.playprocess:
-        w.soundplayer(False)
+##    if w.playprocess:
+##        w.soundplayer(False)
+    

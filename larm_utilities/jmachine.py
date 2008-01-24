@@ -1033,13 +1033,13 @@ class PopupLabel(QLabel):
         self.setPaletteBackgroundColor(QColor(100, 50, 0))
     
 class MiniMachine(QVBox):
-    """a Machine without MarioDots connection
+    """a Machine without Canvas connection
     
     Whenever you subclass this, you have to run init_controls after the param
     paths are set, to load the current presets."""
     
-    def __init__(self,label, parent = None, name = None,fl = 0):
-        QVBox.__init__(self,parent,name,fl)
+    def __init__(self,label, parent = None, name = None, fl = 0):
+        QVBox.__init__(self,parent,name, fl)
         
         self.label = label
         self.address = '/'+label.replace(' ', '_').lower()
@@ -1088,7 +1088,7 @@ class MiniMachine(QVBox):
         self.seqparam.set_enableosc(0)
         self.seqparams = []
         for i in range(4):
-            self.seqparams.append(Param(address="/%d" % i, type=int, min=0, max=2))
+            self.seqparams.append(Param(address="/n%d" % i, type=int, min=0, max=2))
             self.seqparam.insertChild(self.seqparams[i])
             button = ParamThreeStateButton(self.seqparams[i], self.buttonrow)
             button.setMaximumHeight(15)
@@ -1208,16 +1208,15 @@ class MiniMachine(QVBox):
         self.x_only = boo
         
     def set_y_only(self, boo):
-        self.y_only = boo
-        
+        self.y_only = boo    
 
 class Machine(MiniMachine):
     activeMachines = set()
     shownumbers = 0
     mouse_pos = None
 
-    def __init__(self,label,canvas, parent = None, name = None,fl = 0):
-        MiniMachine.__init__(self,label,parent,name,fl)
+    def __init__(self,label,canvas, parent = None, name = None):
+        MiniMachine.__init__(self,label,parent,name)
 
         self.canvas = canvas
         ## make a new canvas set of dots - this could also be done w/ signals...

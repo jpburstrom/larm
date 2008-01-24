@@ -8,62 +8,10 @@ cpu usage
 timer
 
 *switch audio parent on/off samma som: (första gången dsp on, sedan switch)
-*start audio engine
-*canvas finetune
-*machine select/save snapshot hotkey
-*recorder (buffer)
-*recorder (to disk)
-*canvas onlyX/onlyY (in PollingThread)
-*machine on_off hotkey (space)
-*view parameter number (for exact changes)
-*grandel - tgl freeze
-*piano mode
-*disable autorepeat
-*saving: metod för att känna igen sträng? WONTFIX
-*canvas snap-to-grid? WONTFIX
 
 
 
 
-
-nej:
-    canvasmachine med 2 hotkeys:
-    * samma save/snapshot
-    * samma ui
-    * olika hotkeys (instanser)
-
-
-GUI:
-
-Routing: (1 instance)
-*Select from, to  - change value
-*10 sends: loop 1-4, grandel, deelay, pm7, combo, adc12, adc3
-*disable send to self
-*Init state
-*Save state(s)
-
-mouseloopers: (4 instances)
-*change sample
-*change q amt
-*Init state
-*save state(s)
-*connect to canvas
-
-*select files:
-    *select source file -> destination
-    *indicate when loaded
-    *check if loaded and loading: done by backend
-
-*record to array:
-*    start slot recording
-*    stop slot recording
-*    select recording slot -> destination
-
-*canvas:
-    *5 xy dots
-    *allowing multiple instances
-    *main label
-    *dot labels
 
 
 fm synth:
