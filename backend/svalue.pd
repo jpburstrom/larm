@@ -27,6 +27,8 @@ symbol in second inlet.;
 #X obj 376 153 print svalue;
 #X obj 374 111 list prepend No method for;
 #X obj 376 131 list trim;
+#X text 169 14 global receive;
+#X text 377 307 global send;
 #X connect 0 0 20 0;
 #X connect 1 0 13 0;
 #X connect 2 0 4 0;

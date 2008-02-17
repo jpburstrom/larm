@@ -176,6 +176,7 @@ class TagEditor(QMainWindow):
         self.samples_box.sort()
     
     def change_current_file(self, string):
+        self.currentObj = dbSoundFiles.selectBy(fullPath=str(string), active=True)
         if not self.currentObj.count():
             return
         tags = self.currentObj[0].tags

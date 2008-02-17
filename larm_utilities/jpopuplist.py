@@ -33,7 +33,7 @@ class _MyListBox(QListBox):
 
     def mouseMoveEvent(self, ev):
         p = self.parent()
-        if self.dragging:
+        if self.dragging and not p.viewingtags:
             self.current = p.samples[p.tag][str(self.currentText())]
             d = QTextDrag(self.current[0].split("/")[-1].split(".wav")[0], self)
             d.dragCopy()

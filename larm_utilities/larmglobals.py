@@ -16,7 +16,7 @@ def getgl(key):
     Arg: dict key"""
     
     gl = {
-        "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s2.pd"]), #file to launch
+        "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s2-lomem.pd"]), #file to launch
         "polltime" : 0.04, #ms, how often mouse gets polled
         "mouse_resolution" : 3000, #some kind of resolution factor, larger = slower
         "osc_address" : "127.0.0.1", 

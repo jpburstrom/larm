@@ -160,7 +160,10 @@ class MarioDots(QHBox):
         if not None in (x, y):
             k = "%.3f/%.3f" % (x, y)
         else:
-            k = "%.3f" % y or x
+            try:
+                k = "%.3f" % y or x
+            except TypeError:
+                pass
         self.texts[label][0][n].setText(k)
     
     def movedots(self, label, dotlist):

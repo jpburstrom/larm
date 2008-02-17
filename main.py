@@ -10,7 +10,6 @@ from qt import *
 
 from copy import copy
 from time import sleep
-
 import evdev
 
 from larm_utilities import *
@@ -53,6 +52,8 @@ class MouseLooper(Machine):
 
         self.host = getgl('osc_address')
         self.port = getgl('osc_port')
+        
+        self.add_small_toggles("/snap_to_onsets")
         
         #Bind the returning ping when sample is loaded to the readysignal method
         qApp.osc.bind(self.readysignal, "".join((self.address, "/sample_loaded"))) 
@@ -202,25 +203,10 @@ class Grandel(Machine):
         self.mastertempo_sl.setTickInterval(4)
         self.root_param.insertChild(self.mastertempo)
         
-        self.freezebtn_param = Param(type=bool, address="/freeze")
-        self.root_param.insertChild(self.freezebtn_param)
-        self.freezebtn = ParamPushButton(self.freezebtn_param, self)
-        self.freezebtn.setText("Freeze")
-        self.freezebtn.setMaximumHeight(16)
-        self.freezebtn.setFlat(1)
-        
-        self.add_small_toggles("/gliss")
-        
-        self.connect(self.freezebtn, SIGNAL("toggled(bool)"), self.on_freeze)
+        self.add_small_toggles("/freeze", "/gliss")
         
         self.connect(self, PYSIGNAL("snapshot_loaded"), self.update_controls)
     
-    def on_freeze(self, boo):
-        if boo:
-            self.freezebtn.setPaletteForegroundColor(QColor(255,0,0))
-        else:
-            self.freezebtn.setPaletteForegroundColor(QColor(0,0,0))
-            
     def on_window_change(self, v):
         self.windowlabel.setPixmap(self.windows[9-v])
     
@@ -706,14 +692,14 @@ class MyMenu(QPopupMenu):
             QKeySequence("F10"), p, "focusText")
         p.focusText.addTo(self)
         p.focusText.setToggleAction(1)
-        p.toggleParamRouting = QAction("Param Routing",
-            QKeySequence("F9"), p, "toggleParamRouting")
-        p.toggleParamRouting.addTo(self)
+        #p.toggleParamRouting = QAction("Param Routing",
+        #    QKeySequence("F9"), p, "toggleParamRouting")
+        #p.toggleParamRouting.addTo(self)
         p.toggleLogWindow = QAction("Log Window",
             QKeySequence("F8"), p, "toggleLogWindow")
         p.toggleLogWindow.addTo(self)
-        p.toggleArduinoCalib = QAction("Arduino Calibration", QKeySequence("F7"), p, "toggleArduinoCalib")
-        p.toggleArduinoCalib.addTo(self)
+        #p.toggleArduinoCalib = QAction("Arduino Calibration", QKeySequence("F7"), p, "toggleArduinoCalib")
+        #p.toggleArduinoCalib.addTo(self)
         p.restart_pd = QAction(p, "restart_pd")
         p.restart_pd.setText("Restart PD")
         p.restart_pd.addTo(self)
@@ -843,12 +829,13 @@ class GuiThread(QMainWindow):
         label.setText("This is the disk player")
         
         self.middle_stack = QWidgetStack(self.middle_rack)
+        self.middle_stack.temporary_widget = None
         self.canvas = MarioDots(self.middle_stack, "Hej hej")
         self.middle_stack.addWidget(self.canvas, 0)
         
         #this should be before samplers(?)
         self.urack = QVBox(self)
-        self.urack.setGeometry(800, 5, 200, 674)
+        self.urack.setGeometry(800, 5, 200, self.height())
         self.samplelist = SampleList(self.urack, "Samplelist")
         
 ######################################################
@@ -858,14 +845,15 @@ class GuiThread(QMainWindow):
         
         self.machines = [] #list of machine objects
 
-        self.param_routing = ParamRouting(self)
-        self.param_routing.setGeometry(670, 5, 110, 50)
+        #NB: Param routing is disabled
+        #self.param_routing = ParamRouting(self)
+        #self.param_routing.setGeometry(670, 5, 110, 50)
         #self.param_routing.show()
 ##        self.param_routing.tpr = QAction(self.param_routing, "toggleParamRouting")
 ##        self.param_routing.tpr.setAccel(QKeySequence("F9"))
 ##        self.param_routing.tpr.setToggleAction(0)
         
-        self.machines.append(self.param_routing.saving)
+        #self.machines.append(self.param_routing.saving)
         
         self.urack2 = QVBox(self.urack)
         self.urack2.setSpacing(2)
@@ -929,6 +917,7 @@ class GuiThread(QMainWindow):
 
         self.routing = MyRouting(self.middle_stack)
         self.middle_stack.addWidget(self.routing, 1)
+        self.middle_stack.raiseWidget(self.routing)
         self.middle_stack.adjustSize()
         #self.routing.setGeometry(330, 475, 315, 250)
         self.machines.append(self.routing.saving)
@@ -954,22 +943,24 @@ class GuiThread(QMainWindow):
         self.room = Room("Room", self.canvas, self.middle_rack)
         self.machines.append(self.room)
         
-        self.my_arduino = MyArduino(self)
-        self.my_arduino.setGeometry(200,200,300,300)
-        self.saving.root_param.insertChild(self.my_arduino.root_param)
-        self.my_arduino.hide()
-        self.my_arduino.init_controls()
+##        self.my_arduino = MyArduino(self)
+##        self.my_arduino.setGeometry(200,200,300,300)
+##        self.saving.root_param.insertChild(self.my_arduino.root_param)
+##        self.my_arduino.hide()
+##        self.my_arduino.init_controls()
         
         ##Hook up all machines to base
         for ma in self.machines:
             self.saving.root_param.insertChild(ma.root_param)
-            if ma is not self.param_routing.saving:
+            if True: #ma is not self.param_routing.saving:
                 qApp.splash.message("Initing %s" % ma.label.title())
                 ma.init_controls()
                 ma.show()
+            self.connect(ma, PYSIGNAL("machine_activated()"), self.machine_activated)
+            self.connect(ma, PYSIGNAL("machine_deactivated()"), self.machine_deactivated)
         self.saving.init_controls()
-        qApp.splash.message("Initing Param routing")
-        self.param_routing.init_controls(self.saving.root_param)
+        #qApp.splash.message("Initing Param routing")
+        #self.param_routing.init_controls(self.saving.root_param)
         self.pm7.show()
         
 ######################################################
@@ -1008,17 +999,19 @@ class GuiThread(QMainWindow):
         self.connect(self.quitAction, SIGNAL("activated()"), self.endcommand)
         self.connect(self.focusText, SIGNAL("toggled(bool)"), 
             self.toggle_textedit_focus)
-        self.connect(self.toggleParamRouting, SIGNAL("activated()"), 
-            self.param_routing.toggle_show)
+##        self.connect(self.toggleParamRouting, SIGNAL("activated()"), 
+##            self.param_routing.toggle_show)
         self.connect(self.toggleLogWindow, SIGNAL("activated()"), 
             self.toggle_log_window)
-        self.connect(self.toggleArduinoCalib, SIGNAL("activated()"),
-            self.toggle_arduino_calibration)
+##        self.connect(self.toggleArduinoCalib, SIGNAL("activated()"),
+##            self.toggle_arduino_calibration)
 ##        self.connect(self.param_routing.tpr, SIGNAL("activated()"), 
 ##            self.param_routing.toggle_show)
         self.connect(self.sendctrl, SIGNAL("activated()"), self.action_sendctrl)
         self.connect(self.oscdebug, SIGNAL("toggled(bool)"), self.action_oscdebug)
         self.connect(qApp, PYSIGNAL("paramEcho"), self.show_param_echo)
+        
+        qApp.osc.bind(self.sendctrl, "/incoming/main/send_all_controls") 
         
     def initActions(self):
         # First start with "keyPress->on, keyRelease->off" type toggles. 
@@ -1038,7 +1031,6 @@ class GuiThread(QMainWindow):
             self.key_mapping_list[eval("".join(["Qt.Key_", i.upper()]))] = i
         
         # then for some real actions
-        
         #
         # Mouseloopers
         #
@@ -1058,11 +1050,11 @@ class GuiThread(QMainWindow):
             q = QAction("snap_sv_%d" % i, QKeySequence("SHIFT+F%d" % (i + 1)), self)
             self.connect(q, SIGNAL("activated()"), self.actionSnapshotSave)
             q.myindex = i
-            q = QAction("seq_play_%d" % i, QKeySequence(str(i + 1)), self)
-            self.connect(q, SIGNAL("activated()"), self.actionSeqPlay)
-            q.myindex = i
-            q = QAction("seq_rec_%d" % i, QKeySequence(("!",'"',"#","¤")[i]), self)
+            q = QAction("seq_play_%d" % i, QKeySequence("F%d" % (i + 5)), self)
             self.connect(q, SIGNAL("activated()"), self.actionSeqRec)
+            q.myindex = i
+            q = QAction("seq_rec_%d" % i, QKeySequence("SHIFT+F%d" % (i + 5)), self)
+            self.connect(q, SIGNAL("activated()"), self.actionSeqPlay)
             q.myindex = i
                 
     def cpu_report(self, *msg):
@@ -1087,7 +1079,6 @@ class GuiThread(QMainWindow):
     
     def switch_middle_stack(self):
         m = self.middle_stack
-        print (m.id(m.visibleWidget()) * -1) + 1
         m.raiseWidget((m.id(m.visibleWidget()) * -1) + 1)
     
     def toggle_log_window(self):
@@ -1150,7 +1141,6 @@ class GuiThread(QMainWindow):
         sec = self.timercount % 60
         self.timer.setText('%02d:%02d' % (min, sec))
         
-        
     def actionSnapshotRecall(self):
         ac = self.sender()
         [ma.recall_snapshot(ac.myindex) for ma in self.machines if ma.active]
@@ -1162,18 +1152,17 @@ class GuiThread(QMainWindow):
     def actionSeqPlay(self):
         ac = self.sender()
         i = ac.myindex
-        [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is not 1)
+        [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is 0) 
             ) for ma in self.machines if ma.active]
     
     def actionSeqRec(self):
         ac = self.sender()
         i = ac.myindex
-        [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is not 2) * 2
+        [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is not 2) + 1
             ) for ma in self.machines if ma.active]
 
-    def action_sendctrl(self):
-        for p in self.saving.root_param.queryList("Param"):
-            p._send_to_osc()
+    def action_sendctrl(self, dummy=True):
+        self.saving.root_param.send_to_osc(True) #recursive
 
     def action_oscdebug(self, boo):
         if boo:
@@ -1181,6 +1170,19 @@ class GuiThread(QMainWindow):
         else:
             osc.sendMsg("/pd/oscdebug", [0], self.osc_host, self.osc_port)
     
+    def machine_activated(self):
+        if not self.sender() in self.machines:
+            return
+        if self.middle_stack.visibleWidget() is not self.canvas:
+            self.middle_stack.temporary_widget = self.middle_stack.visibleWidget()
+        self.middle_stack.raiseWidget(self.canvas)
+    
+    def machine_deactivated(self):
+        if not self.sender() in self.machines:
+            return
+        if self.middle_stack.temporary_widget and not [ma for ma in self.machines if ma.active]:
+            self.middle_stack.raiseWidget(self.middle_stack.temporary_widget)
+ 
     def tgl_x_only(self, arg = None):
         self.status.message("Canvas X only", 1000)
         if arg is not None:
@@ -1249,17 +1251,13 @@ class GuiThread(QMainWindow):
                 else:
                     try:
                         self.stgl_keys["nomod"][self.key_mapping_list[e.key()]](1)
-                    except KeyError:
-                        pass
-                    except IndexError:
+                    except (KeyError, IndexError):
                         pass
             
             elif self.active_modifiers == set([Qt.Key_Alt]):
                 try:
                     self.stgl_keys["Alt"][self.key_mapping_list[e.key()]](1)
-                except KeyError:
-                    pass
-                except IndexError:
+                except (KeyError, IndexError):
                     pass
             
 
@@ -1283,16 +1281,12 @@ class GuiThread(QMainWindow):
                 else:
                     try:
                         self.stgl_keys["nomod"][self.key_mapping_list[e.key()]](0)
-                    except KeyError:
-                        pass
-                    except IndexError:
+                    except (KeyError, IndexError):
                         pass
             elif self.active_modifiers == set([Qt.Key_Alt]):
                 try:
                     self.stgl_keys["Alt"][self.key_mapping_list[e.key()]](0)
-                except KeyError:
-                    pass
-                except IndexError:
+                except (KeyError, IndexError):
                     pass
       
     def closeEvent(self, ev):
@@ -1479,6 +1473,9 @@ if __name__ == "__main__":
     qApp.splash.show()
     QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
     client = PollingThread()
+    if "--print-osc" in sys.argv:
+        client.gui.saving.root_param.printTree()
+        sys.exit()
     a.setMainWidget(client.gui)
     qApp.splash.hide()
     a.exec_loop()

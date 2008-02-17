@@ -89,6 +89,7 @@ class Param(QObject):
         osc.bind(self.handle_incoming_osc, "/incoming" + self.full_address)
         
         self.oscSend = osc.sendMsg
+        self.osc = osc
         self.osc_host = getgl('osc_address')
         self.osc_port = getgl('osc_port')
 
@@ -139,7 +140,10 @@ class Param(QObject):
         """Prints the full OSC address of children, for debug purposes."""
         ql = self.queryList("Param")
         for o in ql:
-            print o.full_address
+            if o.type in (int, float):
+                print "%s, %s, %d-%d" % (o.full_address, str(o.type), o.min, o.max)
+            else:
+                print "%s, %s" % (o.full_address, str(o.type))
             
     def printSaveTree(self):
         """Prints the saving address of children, for debug purposes."""
@@ -188,7 +192,7 @@ class Param(QObject):
         v = self.type(self.within(v))
         self.state[0] = v
         if self._enableosc:
-            self._send_to_osc()
+            self.send_to_osc()
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
         if echo:
             qApp.emit(PYSIGNAL("paramEcho"), (self.address, v))
@@ -222,20 +226,42 @@ class Param(QObject):
         This method extracts the value from the list and returns it."""
         
         return self.state[0]
-            
-    def _send_to_osc(self):
-        """Private method for OSC sending"""
         
-        if self.type is bool:
-            state = [int(self.state[0])]
-        elif self.type is list:
-            state = self.state[0]
-        else:
+    def osc_state(self):
+        if self.type not in (bool, list):
             state = self.state
+        else:
+            try:
+                state = [int(self.state[0])]
+            except TypeError:
+                state = self.state[0]
+        return state
+            
+    def send_to_osc(self, recursive = False, do_return = False):
+        """Public method for OSC sending"""
+        state = self.osc_state()
+        if do_return:
+            return (self.full_address, state)
+        if recursive:
+            bundle = self.osc.createBundle()
+            self.osc.appendToBundle(bundle, self.full_address, state)
+            for p in self.queryList("Param"):
+                k = p.send_to_osc(False, True)
+                self.osc.appendToBundle(bundle, k[0], k[1])
+            self.osc.sendBundle(bundle, self.osc_host, self.osc_port)
+            return
         self.oscSend(self.full_address, state, self.osc_host, self.osc_port)
 ##        if OSCDEBUG:
 ##            print "OSC: " ,self.full_address,  self.state
-##    
+
+#TODO: Fix!
+##    def append_to_bundle(self):
+##        self.osc.appendToBundle(self.__class__.oscbundle, self.full_address, self.osc_state())
+##        
+##    def send_bundle(self):
+##        self.osc.sendBundle(self.__class__.oscbundle, self.osc_host, self.osc_port)
+##        self.__class__.oscbundle = self.osc.createBundle()
+    
     def typecheck(self, p):
         """Compares type with another param.
         
@@ -287,14 +313,14 @@ class Param(QObject):
     def handle_incoming_osc(self, *msg):
         """Takes care of incoming osc messages.
         
-        Updates state, sends to OSC (sic) and emits signals for GUI updates."""
-        
-        v = self.type(msg[0][2])
+        Updates state, sends not to OSC (sic) and emits signals for GUI updates."""
+        if self.type is not list:
+            v = self.type(msg[0][2])
+        else:
+            v = msg[0][2:]
         self.state[0] = self.within(v)
-        if self._enableosc:
-            self._send_to_osc()
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
-    
+
     def set_save_address(self, add=None, updatechildren = True):
         """Update or set the current preset save address.
         
@@ -318,7 +344,7 @@ class Param(QObject):
 
 class ParamController(QObject):
     def __init__(self, *args):
-        QSlider.__init__(self, *args)
+        QObject.__init__(self, *args)
         
         self.send_param = None
         self.recv_param = None
@@ -431,7 +457,6 @@ class ParamSlider(QSlider):
     def handle_update(self, p):
         """Recieves signal from the Param, updates Gui.
         """
-        
         if p is self.param.UpdateMax:
             QSlider.setMaxValue(self, self.param.max)
         elif p is self.param.UpdateMin:
@@ -1028,10 +1053,11 @@ class PopupLabel(QLabel):
     
     def activate(self):
         self.setPaletteBackgroundColor(QColor(255,127,42))
-    
+        
     def deactivate(self):
         self.setPaletteBackgroundColor(QColor(100, 50, 0))
-    
+        
+        
 class MiniMachine(QVBox):
     """a Machine without Canvas connection
     
@@ -1081,6 +1107,9 @@ class MiniMachine(QVBox):
         self.preset_menu = PresetComboBox(self.root_param, self)
         self.buttonrow = QHBox(self)
         self.buttonrow.setSpacing(2)
+        self.buttonrow2 = QHBox(self)
+        self.buttonrow.setSpacing(2)
+        
         self.snapbuttons = SnapButtonGroup(self.buttonrow, 4)
         self.seqparam = Param(address="/seq")
         self.root_param.insertChild(self.seqparam)
@@ -1099,6 +1128,7 @@ class MiniMachine(QVBox):
         
         self.onoff = Param(address="/onoff", type=bool)
         self.onoff.set_saveable(0)
+        self.connect(self.onoff, PYSIGNAL("paramUpdate"), self.update_gui)
         self.root_param.insertChild(self.onoff)
         
         #all instances with the same parent gets a signal when a new preset is born
@@ -1113,16 +1143,17 @@ class MiniMachine(QVBox):
     
     def add_small_toggles(self, *args):
         font = QFont()
-        font.setBold(1)
+        font.setBold(0)
+        row = self.buttonrow2
         for btn in args:
             param = Param(type=bool, address=btn)
             self.root_param.insertChild(param)
-            button = ParamPushButton(param, self.buttonrow)
-            button.setMaximumHeight(20)
-            button.setMaximumWidth(20)
-            button.setText(btn[1:3])
+            button = ParamPushButton(param, row)
+            button.setMaximumHeight(16)
+            #button.setMaximumWidth(20)
+            button.setText((btn[1:].split("_"))[0])
             button.setFont(font)
-            QToolTip.add(button, btn)
+            QToolTip.add(button, " ".join(btn[1:].split("_")))
             self.connect(button, SIGNAL("toggled(bool)"), self.small_tgl_change_color)
     
     def small_tgl_change_color(self, boo):
@@ -1178,7 +1209,13 @@ class MiniMachine(QVBox):
         if self.preset_menu.dirty == 1:
             dirty = " *"
         self.tek.setText("".join([self.label.title()," [%s]" % self.preset_menu.current_preset, dirty]))
-    
+        
+    def update_gui(self, p):
+        if self.onoff.get_state():
+            self.tek.setPaletteForegroundColor(QColor("Green"))
+        else:
+            self.tek.setPaletteForegroundColor(QColor("beige"))
+
     def on_off(self, arg = None):
         """Turn the bastard on and off. Toggle or set.
         The argument can be 0 or 1 for off and on, or None for toggle."""
@@ -1192,14 +1229,16 @@ class MiniMachine(QVBox):
     def activate(self):
         if not self.active:
             self.active = True
+            self.emit(PYSIGNAL("machine_activated()"), ())
             self.tek.activate()
         
     def deactivate(self):
         self.active = False
+        self.emit(PYSIGNAL("machine_deactivated()"), ())
         self.tek.deactivate()
         
     def tgl_active(self, arg=None):
-        if (not self.active) and arg != 0 :
+        if not self.active and arg != 0:
             self.activate()
         else:
             self.deactivate()
@@ -1231,8 +1270,6 @@ class Machine(MiniMachine):
         ## if only to move x or y axis... invoked by hotkey
         self.y_only = 0
         self.x_only = 0
-        
-        self.shownumbers = self.__class__.shownumbers
         
         self.timer = QTimer() #this is called when activated
         QObject.connect(self.timer, SIGNAL("timeout()"), self.update_canvas)
@@ -1319,6 +1356,7 @@ class Machine(MiniMachine):
                     self.root_param.insertChild(p)
                     self.state[u[0]] = p.state
                     self._canvasparams[u[0]] = p
+                    self.connect(p, PYSIGNAL("paramUpdate"), self.param_update)
                     u[1].append( mr / (u[1][1] - u[1][0])) #calculate factor
                     if j == 'REL_X':
                         u[1].append((u[1][1] - u[1][0]) / self.scaleto[0]) # X value for canvas
@@ -1328,17 +1366,17 @@ class Machine(MiniMachine):
     
     def activate(self):
         if not self.active:
-            self.active = True
+            MiniMachine.activate(self)
             self.__class__.activeMachines.add(self)
-            self.update_canvas()
             self.canvas.showset(self.label)
+            self.update_canvas()
             self.timer.start(40)
             #elf.canvaslabel.emit(PYSIGNAL("showMachineLabel"), ((self.label_tuple),))
             qApp.emit(PYSIGNAL("addRemoveMachine"), (self, 1))
             self.tek.activate()
         
     def deactivate(self):
-        self.active = False
+        MiniMachine.deactivate(self)
         self.__class__.activeMachines.discard(self)
         self.canvas.hideset(self.label)
         self.timer.stop()
@@ -1424,6 +1462,18 @@ class Machine(MiniMachine):
             if self.__class__.shownumbers:
                 self.canvas.settext(self.label, self.mouseButtons.index(key), label1, label2)
         self.updateable = []
+        
+    def param_update(self, p):
+        """Recieves signal from the Param, updates Gui.
+        """
+        param = self.sender()
+        if p is param.UpdateState:
+            for btn, dict in self.mouse_parameters.items():
+                try:
+                    [self.updateable.append(btn) \
+                    for k, v in dict.items() if param is self._canvasparams[v[0]]]
+                except KeyError:
+                    pass
     
     def load_preset(self, current_preset, callback):
         """redefine this to make something before loading presets"""
