@@ -118,7 +118,7 @@ class SampleList(QVBox):
             tagObj = dbTags.select()
         fl = []
         for tag in tagObj:
-            [fl.append([t.fullPath, str(t.size), t.samplerate, t.channels]) \
+            [fl.append([t.fullPath, str(t.size), t.samplerate, t.channels, t.onset_cues]) \
             for t in tag.dbSoundFiles if t.active is True]
         return fl
     

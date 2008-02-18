@@ -2,56 +2,6 @@ TODO:
 canvas less cpu-hungry redraw/move ?
 place to send custom OSC msgs (for debug, recording..)
 
-låtlista, anteckningar (not self-saving)
-
-cpu usage
-timer
-
-*switch audio parent on/off samma som: (första gången dsp on, sedan switch)
-
-
-
-
-
-
-fm synth:
-    values:
-    pitch coarse/fine 2
-    *oct max/min 2
-    *speed speed/deviation 2
-    *length len/deviation 2
-    *amplitude amp/deviation 2
-    *3 instances:
-        (delay) attack decay sustain release 5 (4)
-        freq
-    *routing 3*3
-    *change wave 0-3 * 3
-    *pan * 3
-    *vol * 3
-    *keyboard
-    Note generation currently in gui part. change to backend?
-*    piano mode
-
-*grandel:
-*    change gran window sel(10)
-*    change value
-*    tgl freeze
-*    connect to canvas (x2? vol?)
-*    Init state
-*    save state
-
-*deelay:
-*    connect to canvas
-*    Init state
-*    save state
-
-*combo
-*connect to canvas x2
-
-*room
-*canvas? perhaps sliders?
-
-
 ================================================
 
 OSC prot

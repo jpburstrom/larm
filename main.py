@@ -53,13 +53,12 @@ class MouseLooper(Machine):
         self.host = getgl('osc_address')
         self.port = getgl('osc_port')
         
-        self.add_small_toggles("/snap_to_onsets")
+        self.add_small_toggles("/snap_to_onsets", "/lfskip", "/invert_pitch", "/pquant", "/quantizeamt")
         
         #Bind the returning ping when sample is loaded to the readysignal method
         qApp.osc.bind(self.readysignal, "".join((self.address, "/sample_loaded"))) 
         
         self.connect(self, PYSIGNAL("snapshot_loaded"), self.update_controls)
-        
         
     def update_controls(self, preset = None):
         #FIXME: this is crazy.
@@ -95,7 +94,7 @@ class MouseLooper(Machine):
         ('Pitch deviation', 'Pitch'),
         ('Skip', 'Grain length'),
         ('Offset', 'Size'),
-        ('Quantize amount', 'Quantize speed')
+        ('Grain interpolation', 'Quantize speed')
         ) )
         
     def set_mouse_parameters(self):
@@ -113,7 +112,7 @@ class MouseLooper(Machine):
             {'REL_X' : ("/offset", [0.0, 1.0]),
                 'REL_Y' : ("/size", [0.0, 1.0]) },
         self.mouseButtons[4]:
-            {'REL_X' : ("/quantizeamt", [0.0, 1.0]),
+            {'REL_X' : ("/interpolation", [0.0, 1.0]),
                 'REL_Y' : ("/qspeed", [-1.0, 1.0]) },
         }
     def dragEnterEvent(self, ev):
@@ -405,6 +404,10 @@ class MainMachine(MiniMachine):
         MiniMachine.__init__(self, *args)
         
         
+        self.dspbutton = QPushButton("_/ _", self)
+        self.dspbutton.setToggleButton(1)
+        
+        
         self.tempo = Param(address="/tempo", type=float, min=10, max=200)
         self.root_param.insertChild(self.tempo)
         
@@ -426,6 +429,14 @@ class MainMachine(MiniMachine):
         self.mastervolume = Param(address="/volume", type=float, min=0, max=2)
         self.mastervolumeslider = ParamProgress(self.mastervolume, self.sliderbox)
         self.root_param.insertChild(self.mastervolume)
+        
+        self.send_all_controls = Param (address="/send_all_controls", type=Bang)
+        self.root_param.insertChild(self.send_all_controls)
+        
+        self.connect(self.send_all_controls, PYSIGNAL("paramUpdate"), self.sendall)
+    
+    def sendall(self, update=False):
+        self.root_param.send_to_osc(True) #recursive
         
 class RecordToDisk(QHBox):
     """A Recording button for capturing what's coming out."""
@@ -696,7 +707,7 @@ class MyMenu(QPopupMenu):
         #    QKeySequence("F9"), p, "toggleParamRouting")
         #p.toggleParamRouting.addTo(self)
         p.toggleLogWindow = QAction("Log Window",
-            QKeySequence("F8"), p, "toggleLogWindow")
+            QKeySequence("F9"), p, "toggleLogWindow")
         p.toggleLogWindow.addTo(self)
         #p.toggleArduinoCalib = QAction("Arduino Calibration", QKeySequence("F7"), p, "toggleArduinoCalib")
         #p.toggleArduinoCalib.addTo(self)
@@ -791,12 +802,13 @@ class GuiThread(QMainWindow):
         self.middle_rack = QVBox(self)
         self.middle_rack.setGeometry(320, 5, 330, 700)
         self.middle_rack.setSpacing(2)
-        brack = QHBox(self.middle_rack)
-        QHBox(brack) #dummy
-        self.dspbutton = QPushButton("_/ _", brack)
-        self.dspbutton.setToggleButton(1)
-        QHBox(brack) #dummy
+
+        self.saving = MainMachine("Main", self.middle_rack, "mainsave")
+        #self.saving.setFixedHeight(150)
+        
+        
         ##RUGAR crap
+        """
         diskplayparams = []
         pop = QVBox(self.middle_rack)
         brack = QHBox(pop)
@@ -827,6 +839,7 @@ class GuiThread(QMainWindow):
         diskplayparams.append(p)
         label = ParamLabel(p, pop)
         label.setText("This is the disk player")
+        """
         
         self.middle_stack = QWidgetStack(self.middle_rack)
         self.middle_stack.temporary_widget = None
@@ -871,14 +884,12 @@ class GuiThread(QMainWindow):
             m.root_param.set_save_address("/mouselooper")
             
         self.narrowbox = QVBox(self)
-        self.narrowbox.setGeometry(650, 55, 140, 670)
+        self.narrowbox.setGeometry(650, 5, 140, 670)
         self.narrowbox.setSpacing(4)
 
-        self.saving = MainMachine("Main", self.narrowbox, "mainsave")
-        #self.saving.setFixedHeight(150)
         
         ##RUGAR crap
-        [self.saving.root_param.insertChild(p) for p in diskplayparams]
+        #[self.saving.root_param.insertChild(p) for p in diskplayparams]
         
         
         self.textedit = MyTextEdit(self.narrowbox)
@@ -899,14 +910,15 @@ class GuiThread(QMainWindow):
             self.textedit.setText(stream.read())
         
         self.logwindow = QTextEdit(self)
+        self.logwindow.setFont(QFont("DejaVu Sans Mono", 7))
         self.logwindow.setTextFormat(Qt.LogText)
         self.logwindow.setPaletteBackgroundColor(QColor(50,50,50))
         self.logwindow.setPaletteForegroundColor(QColor("orange"))
         self.logwindow.setHScrollBarMode(QScrollView.AlwaysOff)
         self.logwindow.setVScrollBarMode(QScrollView.AlwaysOff)
         self.logwindow.setFocusPolicy(QWidget.NoFocus)
-        self.logwindow.setGeometry(200, 200, 600, 400)
-        self.logwindow.hide()
+        self.logwindow.setGeometry(320, 710, 475, 55) 
+        self.logwindow.show()
 #        self.logfile = QFile("/tmp/pdlog")
 #        if (self.logfile.open(IO_ReadOnly)):
 #            self.stream = QTextStream(txtfile)  
@@ -989,7 +1001,7 @@ class GuiThread(QMainWindow):
         self.osc_host = getgl('osc_address')
         self.osc_port = getgl('osc_port')
         
-        self.connect(self.dspbutton, SIGNAL("toggled(bool)"), self.turn_on_dsp)
+        self.connect(self.saving.dspbutton, SIGNAL("toggled(bool)"), self.turn_on_dsp)
         self.connect(self.recPathAction, 
             SIGNAL("activated()"), self.recording.choose_recpath)
         self.connect(self.startTimerAction, 
@@ -1007,11 +1019,9 @@ class GuiThread(QMainWindow):
 ##            self.toggle_arduino_calibration)
 ##        self.connect(self.param_routing.tpr, SIGNAL("activated()"), 
 ##            self.param_routing.toggle_show)
-        self.connect(self.sendctrl, SIGNAL("activated()"), self.action_sendctrl)
+        self.connect(self.sendctrl, SIGNAL("activated()"), self.saving.sendall)
         self.connect(self.oscdebug, SIGNAL("toggled(bool)"), self.action_oscdebug)
         self.connect(qApp, PYSIGNAL("paramEcho"), self.show_param_echo)
-        
-        qApp.osc.bind(self.sendctrl, "/incoming/main/send_all_controls") 
         
     def initActions(self):
         # First start with "keyPress->on, keyRelease->off" type toggles. 
@@ -1082,11 +1092,11 @@ class GuiThread(QMainWindow):
         m.raiseWidget((m.id(m.visibleWidget()) * -1) + 1)
     
     def toggle_log_window(self):
-        if not self.logwindow.isShown():
+        if self.logwindow.height() < 300:
+            self.logwindow.setGeometry(200, 200, 600, 400)
             self.logwindow.raiseW()
-            self.logwindow.show()
         else:
-            self.logwindow.hide()
+            self.logwindow.setGeometry(320, 710, 475, 55) 
     
     def toggle_arduino_calibration(self):
         if not self.my_arduino.isShown():
@@ -1110,12 +1120,12 @@ class GuiThread(QMainWindow):
                 osc.sendMsg("/main/rick/ping", [1], self.osc_host, self.osc_port)
                 self.recording_inited = 1
             osc.sendMsg("/pd/dsp", [1], self.osc_host, self.osc_port)
-            self.dspbutton.setText("____")
-            self.dspbutton.setPaletteBackgroundColor(QColor("red"))
+            self.saving.dspbutton.setText("____")
+            self.saving.dspbutton.setPaletteBackgroundColor(QColor("red"))
         else:
             osc.sendMsg("/pd/dsp", [0], self.osc_host, self.osc_port)
-            self.dspbutton.setText("_/ _")
-            self.dspbutton.unsetPalette()
+            self.saving.dspbutton.setText("_/ _")
+            self.saving.dspbutton.unsetPalette()
     
     def toggle_piano_mode(self, arg=None):
         if self.current_mode == 1 and arg is not 0:
@@ -1160,9 +1170,6 @@ class GuiThread(QMainWindow):
         i = ac.myindex
         [ma.seqparams[i].set_state(int(ma.seqparams[i].get_state() is not 2) + 1
             ) for ma in self.machines if ma.active]
-
-    def action_sendctrl(self, dummy=True):
-        self.saving.root_param.send_to_osc(True) #recursive
 
     def action_oscdebug(self, boo):
         if boo:
@@ -1463,6 +1470,8 @@ class RealPollingThread(QThread):
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)
+    font = QFont("DejaVu Sans", 7)
+    a.setFont(font)
     try:
         import psyco
         psyco.profile()

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ $# = 2 ] 
+then
+    pd -nogui -noaudio -send ";ARG in $1; ARG out $2; ARG start;" /home/johannes/pd/featureex2.pd
+    exit 0
+else
+    echo USAGE: featex INFILE OUTFILE, where INFILE is a file with full path to samples, one per line.
+fi

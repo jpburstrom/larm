@@ -391,11 +391,11 @@ class TagEditor(QMainWindow):
                     continue
                 l = [lin.strip() for lin in line.split("|")]
                 obj = sqlobj_dict[l[0]]
-                obj.spectral_centroid = float(l[1])
-                obj.spectral_flatness = float(l[2])
-                obj.onsets = int(l[3])
-                obj.onset_cues = l[5]
-                obj.power = float(l[4])
+                #obj.spectral_centroid = float(l[1])
+                #obj.spectral_flatness = float(l[2])
+                #obj.onsets = int(l[3])
+                obj.onset_cues = l[1]
+                #obj.power = float(l[4])
         progress.setProgress(100)
     
     def reanalyze(self):
@@ -408,7 +408,7 @@ class TagEditor(QMainWindow):
             if file.active:
                 self.inspect_wave(file)
                 fta[file.fullPath] = file
-                if len(fta) == 15:
+                if len(fta) == 100:
                     self.analyze(fta)
                     fta = {}
             if progress.wasCanceled():

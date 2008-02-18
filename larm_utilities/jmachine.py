@@ -928,6 +928,10 @@ class SnapButton(QPushButton):
         self.button = 0
         self.event = 0
         self.saved = False
+        font = QFont()
+        font.setBold(0)
+        font.setPointSize(8)
+        self.setFont(font)
         #self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         #self.resize(2,2)
         
@@ -994,6 +998,7 @@ class PopupLabel(QLabel):
         self.setPaletteBackgroundColor(QColor(100,50,0))
         font = QFont()
         font.setWeight(font.Bold)
+        font.setPointSize(8)
         self.setFont(font)
         self.setGeometry(QRect(10,10,120,20))
         self.setPaletteForegroundColor(QColor(Qt.white))
@@ -1116,10 +1121,15 @@ class MiniMachine(QVBox):
         self.seqparam.set_saveable(0)
         self.seqparam.set_enableosc(0)
         self.seqparams = []
+        font = QFont()
+        font.setBold(0)
+        font.setPointSize(8)
         for i in range(4):
             self.seqparams.append(Param(address="/n%d" % i, type=int, min=0, max=2))
+            self.seqparams[i].set_saveable(0)
             self.seqparam.insertChild(self.seqparams[i])
             button = ParamThreeStateButton(self.seqparams[i], self.buttonrow)
+            button.setFont(font)
             button.setMaximumHeight(15)
             button.setMaximumWidth(20)
             button.setText("s%d" % i)
@@ -1143,15 +1153,15 @@ class MiniMachine(QVBox):
     
     def add_small_toggles(self, *args):
         font = QFont()
-        font.setBold(0)
+        font.setPointSize(7)
         row = self.buttonrow2
         for btn in args:
             param = Param(type=bool, address=btn)
             self.root_param.insertChild(param)
             button = ParamPushButton(param, row)
             button.setMaximumHeight(16)
-            #button.setMaximumWidth(20)
-            button.setText((btn[1:].split("_"))[0])
+            button.setMinimumWidth(20)
+            button.setText(btn[1:].split("_")[0][:6])
             button.setFont(font)
             QToolTip.add(button, " ".join(btn[1:].split("_")))
             self.connect(button, SIGNAL("toggled(bool)"), self.small_tgl_change_color)
@@ -1784,6 +1794,8 @@ def popup():
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)
+    font = QFont("Inconsolata", 10)
+    a.setFont(font)
     w = QHBox()
     #w.setFixedWidth(800)
     p = Param(address="/parent")
@@ -1806,7 +1818,7 @@ if __name__ == "__main__":
     slider2 = ParamSlider(pkuk, kuk)
     
     kuk.root_param.insertChild(pkuk)
-    kuk.add_small_toggles("/foo")
+    kuk.add_small_toggles("/foo", "/you", "xim", "Xampbsa", "Terror", "Foasdji")
     kuk.init_controls()
     
     pp = Param(type=list, address="/foo")
