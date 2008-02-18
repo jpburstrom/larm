@@ -317,7 +317,7 @@
 #X obj 49 439 / 100;
 #X obj 144 488 speedlim 100;
 #X msg 303 462 pwm 9 \$1;
-#X obj 158 460 01toquartic;
+#X obj 158 460 myabs/01toquartic;
 #X obj 369 566 bng 15 250 50 0 empty empty empty 0 -6 0 10 -262144
 -1 -1;
 #N canvas 0 15 764 716 spectrldly 0;

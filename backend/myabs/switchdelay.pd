@@ -1,0 +1,20 @@
+#N canvas 0 15 610 716 10;
+#X obj 139 27 inlet;
+#X obj 144 47 sel 0;
+#X msg 142 112 0;
+#X obj 141 139 outlet;
+#X obj 144 65 delay \$1;
+#X obj 217 61 inlet;
+#X obj 166 84 t f b;
+#X msg 193 106 stop;
+#X text 217 148 A simple abstraction to delay the sending of zeroes
+\, for switch~ to wait for fades and such.;
+#X connect 0 0 1 0;
+#X connect 1 0 4 0;
+#X connect 1 1 6 0;
+#X connect 2 0 3 0;
+#X connect 4 0 2 0;
+#X connect 5 0 4 1;
+#X connect 6 0 3 0;
+#X connect 6 1 7 0;
+#X connect 7 0 4 0;

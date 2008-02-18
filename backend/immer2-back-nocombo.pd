@@ -377,7 +377,7 @@
 #X obj 49 439 / 100;
 #X obj 144 488 speedlim 100;
 #X msg 303 462 pwm 9 \$1;
-#X obj 158 460 01toquartic;
+#X obj 158 460 myabs/01toquartic;
 #X connect 1 0 14 0;
 #X connect 1 1 14 1;
 #X connect 1 2 3 0;

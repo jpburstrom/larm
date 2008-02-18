@@ -1,0 +1,15 @@
+#N canvas 0 15 610 716 10;
+#X obj 138 66 inlet;
+#X obj 138 94 t f f;
+#X obj 138 117 *;
+#X obj 138 139 t f f;
+#X obj 138 163 *;
+#X obj 138 188 outlet;
+#X text 240 100 Linear->Quartic conversion (for values btwn 0-1).;
+#X connect 0 0 1 0;
+#X connect 1 0 2 0;
+#X connect 1 1 2 1;
+#X connect 2 0 3 0;
+#X connect 3 0 4 0;
+#X connect 3 1 4 1;
+#X connect 4 0 5 0;

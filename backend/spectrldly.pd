@@ -382,7 +382,7 @@ and Orm Finnendahl 2006;
 #X obj 182 130 *;
 #X obj 183 106 t f f;
 #X obj 182 -73 + 1;
-#X obj 303 -119 01toquartic;
+#X obj 303 -119 myabs/01toquartic;
 #X obj 303 -84 * -0.5;
 #X floatatom 399 -133 5 0 0 0 - - -;
 #X floatatom 354 -23 5 0 0 0 - - -;

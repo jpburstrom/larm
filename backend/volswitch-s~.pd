@@ -4,7 +4,7 @@
 #X obj 233 364 spigot;
 #X obj 233 237 inlet vol;
 #X obj 337 291 inlet switch;
-#X obj 233 266 01toquartic;
+#X obj 233 266 myabs/01toquartic;
 #X obj 120 363 inlet~;
 #X obj 119 427 volctl~ 0 10;
 #X obj 119 464 outlet~;

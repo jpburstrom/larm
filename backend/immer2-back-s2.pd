@@ -457,7 +457,7 @@
 #X msg 233 395 Done loading;
 #X obj 144 488 speedlim 100;
 #X msg 173 532 pwm 9 \$1;
-#X obj 158 460 01toquartic;
+#X obj 158 460 myabs/01toquartic;
 #N canvas 0 15 661 716 check_for_arduino 0;
 #X msg 114 70 ls /dev/ttyUSB0;
 #X msg 115 121 1;
@@ -498,7 +498,7 @@
 #X obj 250 21 inlet;
 #X obj 370 315 prepent /incoming/main/diskplaystatus;
 #X obj 370 337 s UI;
-#X obj 77 255 01toquartic;
+#X obj 77 255 myabs/01toquartic;
 #X obj 77 97 / 100;
 #X obj 268 313 volctl~ 0 10;
 #X obj 178 313 volctl~ 0 10;

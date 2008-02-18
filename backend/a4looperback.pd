@@ -1,5 +1,5 @@
 #N canvas 251 -6 826 727 10;
-#X obj 303 316 01toquartic;
+#X obj 303 316 myabs/01toquartic;
 #X obj 216 316 volctl~ 0 10;
 #X obj 247 454 mypan~;
 #X obj 194 94 moses -0.01;

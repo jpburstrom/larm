@@ -1,0 +1,27 @@
+#N canvas 0 15 610 716 10;
+#X obj 122 60 inlet;
+#X obj 101 309 outlet;
+#X obj 152 139 f;
+#X obj 123 168 -;
+#X obj 122 106 t f f b;
+#X obj 123 189 abs;
+#X obj 101 139 t f f;
+#X obj 101 242 spigot;
+#X obj 123 212 > \$1;
+#X obj 238 87 inlet;
+#X obj 82 266 t f f;
+#X text 217 246 let through x if abs(x-y) > \$1 where y is previous
+output.;
+#X connect 0 0 4 0;
+#X connect 2 0 3 1;
+#X connect 3 0 5 0;
+#X connect 4 1 6 0;
+#X connect 4 2 2 0;
+#X connect 5 0 8 0;
+#X connect 6 0 7 0;
+#X connect 6 1 3 0;
+#X connect 7 0 10 0;
+#X connect 8 0 7 1;
+#X connect 9 0 8 1;
+#X connect 10 0 2 1;
+#X connect 10 1 1 0;

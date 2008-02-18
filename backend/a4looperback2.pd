@@ -1,5 +1,5 @@
 #N canvas 153 15 712 695 10;
-#X obj 233 318 01toquartic;
+#X obj 233 318 myabs/01toquartic;
 #X obj 146 318 volctl~ 0 10;
 #X obj 304 115 snapshot~;
 #X obj 328 45 random 1000;

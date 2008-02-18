@@ -1,0 +1,48 @@
+#N canvas 236 193 694 354 10;
+#X obj 345 29 table \$0-tri 515;
+#X obj 345 49 table \$0-saw 515;
+#X obj 345 69 table \$0-squ 515;
+#X obj 345 89 table \$0-sin 515;
+#X obj 376 158 \$0;
+#X obj 376 133 loadbang;
+#X obj 142 98 \$0;
+#X msg 285 191 \; \$1-squ sinesum 512 1 0 0.333 0 0.2 0 0.1428 0 0.1111
+0 0.0909 \; \$1-sin sinesum 512 1 \; \$1-saw sinesum 512 1 0.5 0.25
+0.125 0.0625 0.03125 0.015625 0.0078125 0.0039062 0.001953 0.000976
+0.000488 \, normalize \; \$1-tri sinesum 512 1 0 -0.111 0 0.04 0 -0.0204
+0 0.0123 \, normalize;
+#X msg 142 118 set \$1-sin;
+#X obj 165 14 inlet;
+#X obj 100 24 inlet~;
+#X obj 165 34 route wave;
+#X obj 165 52 route 0 1 2 3;
+#X obj 172 78 \$0;
+#X obj 182 138 \$0;
+#X msg 172 98 set \$1-squ;
+#X msg 182 158 set \$1-saw;
+#X obj 222 118 \$0;
+#X msg 222 138 set \$1-tri;
+#X obj 106 215 outlet~;
+#X obj 105 141 tabread4~ \$0-sin;
+#X obj 101 48 *~ 512;
+#X obj 103 70 +~ 1;
+#X connect 4 0 7 0;
+#X connect 5 0 4 0;
+#X connect 6 0 8 0;
+#X connect 8 0 20 0;
+#X connect 9 0 11 0;
+#X connect 10 0 21 0;
+#X connect 11 0 12 0;
+#X connect 12 0 6 0;
+#X connect 12 1 13 0;
+#X connect 12 2 14 0;
+#X connect 12 3 17 0;
+#X connect 13 0 15 0;
+#X connect 14 0 16 0;
+#X connect 15 0 20 0;
+#X connect 16 0 20 0;
+#X connect 17 0 18 0;
+#X connect 18 0 20 0;
+#X connect 20 0 19 0;
+#X connect 21 0 22 0;
+#X connect 22 0 20 0;
