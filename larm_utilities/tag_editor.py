@@ -18,11 +18,15 @@ from qt import *
 from sqlobject import *
 import fnmatch
 import wave
+from aubio.task import *
 
 import FileHasher
 
 DB_PATH = "/home/johannes/myprojects/larm/trunk/larm_utilities/data.db"
 FILEPATHS = ["/home/johannes/samples"]  # Change this to your audio file directories
+
+TESTRUN = False #no saving to db
+PLOT = False 
 
 class dbSoundFiles(SQLObject):
     fullPath = StringCol()
@@ -42,6 +46,63 @@ class dbSoundFiles(SQLObject):
 class dbTags(SQLObject):
     name = StringCol()
     dbSoundFiles = RelatedJoin('dbSoundFiles')
+
+class Analyzer(object):
+
+    def onset_detection(self, file):
+
+        filename = file.fullPath
+        
+        plot = PLOT
+        beat = 0
+        outplot = 0
+
+        params = taskparams()
+        params.hopsize    = 256
+        params.bufsize    = 512
+        params.threshold  = 0.10
+        params.dcthreshold = 1.
+        params.zerothres  = 0.008
+        params.silence    = -70.0
+        params.mintol     = 0.048
+        params.verbose    = False
+        # default take back system delay
+        # if options.delay: params.delay = int(float(options.delay)/params.step)
+
+        dotask = taskonset
+
+        #for plotting
+        params.storefunc=True
+
+        lonsets, lofunc = [], []
+        wplot,oplots = [],[]
+        modes = ['dual']
+        for i in range(len(modes)):
+            params.onsetmode = modes[i] 
+            while True:
+                qApp.processEvents()
+                filetask = dotask(filename,params=params)
+                onsets = filetask.compute_all()
+                if len(onsets)/(file.size/48000.0) > 5 or params.threshold <= 2.15:
+                    params.threshold += 0.25
+                else:
+                    break
+            
+
+            ofunc = filetask.ofunc
+            lofunc.append(ofunc)
+
+            if plot:
+                if beat: 
+                    filetask.plot(oplots, onsets)
+                else:
+                    filetask.plot(onsets, ofunc, wplot, oplots, nplot=False)
+
+            if plot: filetask.plotplot(wplot, oplots, outplot="/tmp/onset", extension="png",
+              xsize=0.8,ysize=0.8,spectro=False)
+
+        return [int(file.samplerate * i[0] * filetask.params.step) for i in onsets]
+
 
 class TagEditor(QMainWindow):
     def __init__(self,parent = None,name = None,fl = 0):
@@ -63,7 +124,12 @@ class TagEditor(QMainWindow):
         self.mainbox.setStretchFactor(self.frame5, 2)
         self.frame5.setFrameShape(QFrame.StyledPanel)
         self.frame5.setFrameShadow(QFrame.Raised)
-
+        
+        if TESTRUN:
+            foo = QLabel("TESTRUN", self.frame5)
+            foo.setPaletteBackgroundColor(Qt.red)
+            foo.setPaletteForegroundColor(Qt.white)
+        
         self.textLabel1_3 = QLabel(self.frame5,"textLabel1_3")
         
         self.tags_cb = QComboBox(self.frame5,"tags_cb")
@@ -76,9 +142,23 @@ class TagEditor(QMainWindow):
         
         self.rescan_button = QPushButton("Full Rescan", self.frame5)
         self.analyze_button = QPushButton("Re-analyze files", self.frame5)
-
-        self.frame3 = QVBox(self.mainbox,"frame3")
-        self.mainbox.setStretchFactor(self.frame3, 1)
+        self.purge_empty_button= QPushButton("Purge nonexistant files from db", self.frame5)
+        
+        self.rightframe = QVBox(self.mainbox)
+        self.mainbox.setStretchFactor(self.rightframe, 2)
+        self.topright = QHBox(self.rightframe)
+        self.rightframe.setStretchFactor(self.topright, 2)
+        
+        if PLOT:
+            self.bottomright = QHBox(self.rightframe)
+            self.rightframe.setStretchFactor(self.bottomright, 1)
+        
+            pixmap = QPixmap("/tmp/onset.png")
+            self.plot = QLabel(self.bottomright)
+            self.plot.setPixmap(pixmap)
+        
+        
+        self.frame3 = QVBox(self.topright,"frame3")
         self.frame3.setFrameShape(QFrame.StyledPanel)
         self.frame3.setFrameShadow(QFrame.Raised)
 
@@ -88,9 +168,9 @@ class TagEditor(QMainWindow):
         self.newtag_box.mousePressEvent = self.newtag_box_mouse_press
 
         self.available_tags = QListBox(self.frame3,"available_tags")
-
-        self.frame4 = QVBox(self.mainbox,"frame4")
-        self.mainbox.setStretchFactor(self.frame4, 1)
+        
+        
+        self.frame4 = QVBox(self.topright,"frame4")
         self.frame4.setFrameShape(QFrame.StyledPanel)
         self.frame4.setFrameShadow(QFrame.Raised)
 
@@ -99,8 +179,10 @@ class TagEditor(QMainWindow):
 
         self.used_tags = QListBox(self.frame4,"used_tags")
         
+        self.samplecontext = QPopupMenu(self)
+        self.samplecontext.insertItem("Reanalyze")
         self.mainbox.adjustSize()
-
+        
         self.languageChange()
 
         self.resize(QSize(608,670).expandedTo(self.minimumSizeHint()))
@@ -111,6 +193,8 @@ class TagEditor(QMainWindow):
 
         self.setup_db()
 
+        self.connect(self.samples_box, SIGNAL("contextMenuRequested(QListBoxItem *, const QPoint &)"), self.samplecontext_request)
+        self.connect(self.samplecontext, SIGNAL("activated(int)"), self.samplecontext_handler)
         self.connect(self.used_tags,SIGNAL("selected(int)"),self.switch_tag_placement)
         self.connect(self.available_tags,SIGNAL("selected(int)"),self.switch_tag_placement)
         self.connect(self.newtag_box,SIGNAL("returnPressed()"),self.add_new_tag)
@@ -120,7 +204,8 @@ class TagEditor(QMainWindow):
         self.connect(self.playbtn, SIGNAL("pressed()"), self.play_soundfile)
         self.connect(self.stopbtn, SIGNAL("pressed()"), self.stop_soundfile)
         self.connect(self.rescan_button, SIGNAL("pressed()"), self.rescandirectory)
-        self.connect(self.analyze_button, SIGNAL("pressed()"), self.reanalyze)
+        self.connect(self.analyze_button, SIGNAL("pressed()"), self.analyze)
+        self.connect(self.purge_empty_button, SIGNAL("pressed()"), self.purge_empty)
         
     def switch_tag_placement(self, index):
         tag = dbTags.select(dbTags.q.name == str(self.sender().text(index)))[0]
@@ -136,6 +221,11 @@ class TagEditor(QMainWindow):
                 self.currentObj[0].removeDbTags(tag)
         recv.insertItem(send.text(index))
         send.removeItem(index)
+        
+    def samplecontext_handler(self, id):
+        if self.sender().text(id) == "Reanalyze":
+            self.inspect_wave(self.currentObj[0])
+            self.analyze(self.currentObj[0])
     
     def add_new_tag(self):
         t = self.sender().text()
@@ -149,6 +239,14 @@ class TagEditor(QMainWindow):
         
     def newtag_box_mouse_press(self, ev):
         self.newtag_box.clear()
+    
+    def purge_empty(self):
+        if not TESTRUN and QMessageBox.question(self, "Are you sure?", \
+            "You're about to remove all inactive files from the database. Are you sure about this? ",
+            "&No", "&Yes"):
+            results = dbSoundFiles.selectBy(active=False)
+            [row.destroySelf() for row in list(results) ]
+        
         
     def setup_db(self):
         db_filename = os.path.abspath(DB_PATH)
@@ -200,6 +298,9 @@ class TagEditor(QMainWindow):
             (co.fullPath, co.samplerate, ch, size, co.spectral_centroid, 
                 co.spectral_flatness, co.onsets, co.power))
         qApp.clipboard().setText(co.fullPath, QClipboard.Selection)
+        
+    def samplecontext_request(self, item, qp):
+        self.samplecontext.popup(qp)
         
         
     def listfiles(self, filter=None):
@@ -303,35 +404,28 @@ class TagEditor(QMainWindow):
         n = existingfiles.count()
         i = 0
         progress = QProgressDialog("Checking against database...", "Cancel", n, self)
-        fta = {}
         for file in existingfiles: 
-            if file.hash in filehashdict: 
-                file.active = True 
-                file.fullPath = filehashdict[file.hash]
-                self.inspect_wave(file)
-                fta[file.fullPath] = file
-                if len(fta) == 15:
-                    print "analyzing"
-                    self.analyze(fta)
-                    fta = {}
+            if file.hash in filehashdict:
+                if not TESTRUN:
+                    file.active = True 
+                    file.fullPath = filehashdict[file.hash]
+                #self.inspect_wave(file)
+                #self.analyze(file)
                 filehashdict.pop(file.hash) 
-            elif file.hash not in filehashdict and not limitcallback:
+            elif file.hash not in filehashdict and not limitcallback and not TESTRUN:
                 file.active = False
             if progress.wasCanceled():
                 return
             i+=1
             progress.setProgress(i)
             qApp.processEvents()
-        if fta:
-            self.analyze(fta)
         progress.setProgress(n)
         
         n = len(filehashdict)
         i = 0
         progress = QProgressDialog("Inserting new files", "Cancel", n, self)
-        fta = {}
         for hash, path in filehashdict.items(): # insert new files into db
-            if progress.wasCanceled():
+            if TESTRUN or progress.wasCanceled():
                 return
             selected = dbSoundFiles.selectBy(fullPath=path)
             if selected.count() and QMessageBox.question(self, "Is this file changed?", \
@@ -342,16 +436,11 @@ class TagEditor(QMainWindow):
                 fileObj = selected[0]
             else:
                 fileObj = dbSoundFiles(fullPath=path, hash=hash, active=True)
-            fta[fileObj.fullPath] = fileObj
-            if len(fta) == 15:
-                self.analyze(fta)
-                fta = {}
             self.inspect_wave(fileObj)
+            self.analyze(fileObj)
             i+=1
             progress.setProgress(i)
             qApp.processEvents()
-        if fta:
-            self.analyze(fta)
         progress.setProgress(n)
         self.tags_cb.setCurrentText(QString("@UNTAGGED"))
         self.filter_soundfiles("@UNTAGGED")
@@ -363,61 +452,58 @@ class TagEditor(QMainWindow):
         except IOError:
             print "wavlength: No such file"
         else:
-            sqlobj.size = int(f.getnframes())
-            sqlobj.channels = int(f.getnchannels())
-            sqlobj.samplerate = int(f.getframerate())
-            if 0 in (sqlobj.size, sqlobj.channels, sqlobj.samplerate):
+            size = int(f.getnframes())
+            channels = int(f.getnchannels())
+            samplerate = int(f.getframerate())
+            if 0 in (size, channels, samplerate):
                 QMessageBox.warning(self, "Couldn't get wave data", \
-                "There seems to be something wrong with this file: <br> %s <br>   Tage couldn't extract all the data he needs. Please check it.                File is deactivated for now." % file)
-                sqlobj.active = False
+                    "There seems to be something wrong with this file: <br> %s <br>   Tage couldn't extract all the data he needs. Please check it.                File is deactivated for now." % file)
+                if not TESTRUN:
+                    sqlobj.active = False
+                    f.close()
+                    return
+                else:
+                    f.close()
+                    return
+            elif not TESTRUN:
+                sqlobj.size = size
+                sqlobj.channels = channels
+                sqlobj.samplerate = samplerate
             f.close()
     
-    def analyze(self, sqlobj_dict):
-        infile = "/tmp/files_to_analyze"
-        outfile = "/tmp/analyzed_files"
-        progress = QProgressDialog("Analyzing %d files..." % len(sqlobj_dict), 
-            "Cancel", 100, self)
-        f = file(infile, "w")
-        [f.write(s + "\n") for s, obj in sqlobj_dict.items()]
-        progress.setProgress(10)
-        f.close()
-        os.system(" ".join(["xterm -e featex", infile, outfile]))
-        progress.setProgress(90)
-        first = True
-        with file(outfile, "r") as f:
-            for line in f:
-                if first:
-                    first = False
-                    continue
-                l = [lin.strip() for lin in line.split("|")]
-                obj = sqlobj_dict[l[0]]
-                #obj.spectral_centroid = float(l[1])
-                #obj.spectral_flatness = float(l[2])
-                #obj.onsets = int(l[3])
-                obj.onset_cues = l[1]
-                #obj.power = float(l[4])
-        progress.setProgress(100)
-    
-    def reanalyze(self):
-        existingfiles = dbSoundFiles.select()
-        n = existingfiles.count()
+    def analyze(self, files=None):
+        plot = PLOT
+        analyzer = Analyzer()
+        if not files:
+            files = dbSoundFiles.select()
+            n = files.count()
+        elif not isinstance(files, list):
+            files = [files]
+            n = len(files)
+        else:
+            n = len(files)
         i = 0
         progress = QProgressDialog("Checking against database...", "Cancel", n, self)
-        fta = {}
-        for file in existingfiles:
+        for file in files:
             if file.active:
+                progress.setLabelText(QString("Inspecting %s" % file.fullPath))
                 self.inspect_wave(file)
-                fta[file.fullPath] = file
-                if len(fta) == 100:
-                    self.analyze(fta)
-                    fta = {}
+                if TESTRUN:
+                    analyzer.onset_detection(file)
+                else:
+                    onsets = [0]
+                    onsets.extend(analyzer.onset_detection(file))
+                    file.onsets = len(onsets)
+                    file.onset_cues = "".join(["%s|" % el for el in onsets])
+                if plot:
+                    self.plot.pixmap().load("/tmp/onset.png")
+                    self.plot.update()
             if progress.wasCanceled():
                 return
             i+=1
             progress.setProgress(i)
             qApp.processEvents()
-        if fta:
-            self.analyze(fta)
+        print "DONE"
         progress.setProgress(n)
                 
     def languageChange(self):
@@ -431,6 +517,7 @@ class TagEditor(QMainWindow):
     def __tr(self,s,c = None):
         return qApp.translate("Tag_editor",s,c)
 
+
 if __name__ == "__main__":
     a = QApplication(sys.argv)
     try:
@@ -443,7 +530,10 @@ if __name__ == "__main__":
     a.setMainWidget(w)
     w.show()
 ##    w.analyze()
-##    QTimer.singleShot(0, w.scan_for_new_files)
+    if QMessageBox.question(self, "What do you think?", \
+            "Should we do a scan for new files?",
+            "&No", "&Yes"):
+        QTimer.singleShot(0, w.scan_for_new_files)
     a.exec_loop()
 ##    if w.playprocess:
 ##        w.soundplayer(False)
