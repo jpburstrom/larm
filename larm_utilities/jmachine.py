@@ -185,6 +185,7 @@ class Param(QObject):
     def set_enableosc(self, boo):
         """Enable OSC send, bool"""
         self._enableosc = boo
+
     
     def set_state(self, v, echo=False):
         """Change current value/string of Param.
@@ -662,10 +663,23 @@ class ParamCheckBox(QCheckBox):
         self.param.set_state(self.isOn())
 
 class ParamProgress(QProgressBar):
-    def __init__(self, param, *args):
+    def __init__(self, param=None, *args):
         QFrame.__init__(self, *args)
-        self.param = param
         
+        self.setPaletteForegroundColor(QColor("gray"))
+        self.setPercentageVisible(True)
+        self.setFocusPolicy(QWidget.NoFocus)
+        
+        self.param = None
+        if param:
+            self.attach_param(param)
+        
+    def attach_param(self, param):
+        #TODO: optimize
+        if self.param is not None:
+            self.detach_param()
+            
+        self.param = param
         
         if param.type not in (float, int):
             raise TypeError, "ParamProgress needs a float or int Param.type"
@@ -676,15 +690,19 @@ class ParamProgress(QProgressBar):
         self.setName(param.label)
         
         self.connect(self.param, PYSIGNAL("paramUpdate"), self.handle_update)
-        self.setFocusPolicy(QWidget.NoFocus)
-        
-        self.setPaletteForegroundColor(QColor("gray"))
-        
-        self.setPercentageVisible(True)
         
         self.dblclick_value = self.param.min
+    
+    def detach_param(self):
+        try:
+            self.disconnect(self.param, PYSIGNAL("paramUpdate"), self.handle_update)
+        except TypeError:
+            pass
+        self.param = None
         
     def mouseDoubleClickEvent(self, e):
+        if not self.param:
+            return
         s = self.param.get_state()
         if s == self.param.min:
             self.param.set_state(self.dblclick_value)
@@ -699,6 +717,8 @@ class ParamProgress(QProgressBar):
         self.setCursor(QCursor(Qt.BlankCursor))
         #print self.origo.y()
     def mouseMoveEvent(self, e):
+        if not self.param:
+            return
         f = self.param.max - self.param.min
         s = (self.param.get_state() + \
             ((self.offset - e.y()) * f / 1000.0 ))
@@ -1058,7 +1078,7 @@ class PopupLabel(QLabel):
         if self.rmb:
             QLabel.mouseDoubleClickEvent(self, e)
         elif e.button() == 1:
-            qApp.mainwindow.deactivate_all()
+            qApp.mainWidget().deactivate_all()
             self.parent().activate()
             #here we go
             try:
@@ -1082,6 +1102,8 @@ class MiniMachine(QVBox):
     
     Whenever you subclass this, you have to run init_controls after the param
     paths are set, to load the current presets."""
+    
+    receivers = set()
     
     def __init__(self,label, parent = None, name = None, fl = 0):
         QVBox.__init__(self,parent,name, fl)
@@ -1108,6 +1130,16 @@ class MiniMachine(QVBox):
         self.presets = [] #list of current preset names
         self.globalsnap = []
         self.localsnap = []
+        
+        #====ROUTING====#
+        s = Param(address="/send")
+        self.root_param.insertChild(s)
+        self.send = RoutingModel(s)
+        self.is_routing_sender = True
+        self.is_routing_receiver = False
+        self.routing_min = 0
+        self.routing_max = 1000
+        
         self.active = False
         self.osc_host = getgl("osc_address")
         self.osc_port = getgl("osc_port")
@@ -1131,6 +1163,7 @@ class MiniMachine(QVBox):
         
         self.snapbuttons = SnapButtonGroup(self.buttonrow, 4)
         self.seqparam = Param(address="/seq")
+        
         self.root_param.insertChild(self.seqparam)
         self.seqparam.set_saveable(0)
         self.seqparam.set_enableosc(0)
@@ -1160,7 +1193,7 @@ class MiniMachine(QVBox):
 
         self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.update_controls)
         self.connect(self.preset_menu, PYSIGNAL("preset_loaded"), self.append_preset_to_label)
-    
+        
     def create_routing_menu(self):
         self.routing_menu = _ParamRoutingPopup2(self.root_param, self)
         self.routing_menu.create_menu()
@@ -1176,6 +1209,8 @@ class MiniMachine(QVBox):
             button.setMaximumHeight(16)
             button.setMinimumWidth(20)
             button.setText(btn[1:].split("_")[0][:6])
+            self.routing = Param
+        
             button.setFont(font)
             QToolTip.add(button, " ".join(btn[1:].split("_")))
             self.connect(button, SIGNAL("toggled(bool)"), self.small_tgl_change_color)
@@ -1183,10 +1218,20 @@ class MiniMachine(QVBox):
     def small_tgl_change_color(self, boo):
         color = ("black", "red")
         self.sender().setPaletteForegroundColor(QColor(color[int(boo)]))
+        
+    def is_receiver(self, boo):
+        """Set machine as receiver (for audio routing).
+        
+        Needs to be called before the finishing init_controls"""
+        if boo:
+            self.__class__.receivers.add(self)
+        else:
+            self.__class__.receivers.remove(self)
     
     def init_controls(self):
         self.preset_menu.reload_preset_list()
         self.saving.load_preset("init", self.root_param)
+        self.send.add_sends(self, self.__class__.receivers)
         self.preset_menu.current_preset = "init"
         self.append_preset_to_label()
     
@@ -1197,6 +1242,14 @@ class MiniMachine(QVBox):
     def add_preset(self, o, add, label):
         if add == self.root_param.full_save_address and o is not self:
             self.preset_menu.insert_item(label)
+    
+    def set_routing_sender(self, boo):
+        self.is_routing_sender = boo
+        self.emit(PYSIGNAL("is_routing_sender"), (boo,))
+    
+    def set_routing_receiver(self, boo):
+        self.is_routing_receiver = boo
+        self.emit(PYSIGNAL("is_routing_receiver"), (boo,))
     
     def save_snapshot(self, snap):
         """ Save snapshot
@@ -1253,12 +1306,13 @@ class MiniMachine(QVBox):
     def activate(self):
         if not self.active:
             self.active = True
-            self.emit(PYSIGNAL("machine_activated()"), ())
+            qApp.emit(PYSIGNAL("machine_activated"), (self,))
             self.tek.activate()
         
     def deactivate(self):
         self.active = False
-        self.emit(PYSIGNAL("machine_deactivated()"), ())
+            
+        qApp.emit(PYSIGNAL("machine_deactivated"), (self,))
         self.tek.deactivate()
         
     def tgl_active(self, arg=None):
@@ -1507,6 +1561,110 @@ class Machine(MiniMachine):
     def recall_snapshot(self, snap, local=True):
         MiniMachine.recall_snapshot(self, snap, local)
         self.call_for_canvas_update()
+
+
+
+#========================
+#SENDS/RECEIVES
+#========================
+
+class RoutingParam(Param):
+    """A subclass of Param, used for send/recv routing"""
+    
+    def __init__(self, **kwargs):
+        Param.__init__(self, **kwargs)
+        
+        self.enabled = True
+            
+    def set_enabled(self, boo):
+        self.enabled = boo
+
+class RoutingModel(QObject):
+    """A one-to-many send/recv routing model"""
+    def __init__(self, parent, *args):
+        QObject.__init__(self, *args)
+        
+        self.root_param = parent
+        self.send_to_self = False
+        self.params = {} #holds all  Params
+        
+    def add_sends(self, parent, receivers):
+        for l in receivers:
+            if l is parent and not self.send_to_self:
+                continue
+            self.connect(l, PYSIGNAL("is_routing_sender"), self.edit_sends)
+            r = l.root_param
+            p = RoutingParam(address=r.address,
+                min=0,max=1000) #FIXME: hardcoded
+            self.params[l.address] = p
+            self.root_param.insertChild(p)
+    
+    def edit_sends(self, is_send):
+        self.params[self.sender().root_param.address].set_enabled(is_send)
+
+class RoutingView(QWidget):
+    """A one-to-many send/recv routing view"""
+    def __init__(self, widgets, *args):
+        QWidget.__init__(self, *args)
+        
+        self.layout = QVBoxLayout(self)
+        self.active = []
+        
+        self.setMinimumHeight(100)
+        
+        self.mainlabel = QLabel("Hello", self)
+        self.layout.add(self.mainlabel)
+        
+        self.labels = []
+        self.controls = []
+        for i in range(widgets):
+            self.labels.append(QLabel("---", self))
+            self.layout.add(self.labels[i])
+            self.labels[i].setDisabled(1)
+            self.controls.append(ParamProgress(None, self))
+            self.layout.add(self.controls[i])
+            self.controls[i].setDisabled(1)
+            
+        self.connect(qApp, PYSIGNAL("machine_activated"), self.activate)
+        self.connect(qApp, PYSIGNAL("machine_deactivated"), self.deactivate)
+    
+    def activate(self, obj):
+        self.mainlabel.setDisabled(0)
+        if not obj in self.active:
+            self.active.append(obj)
+        s = obj.send
+        self.mainlabel.setText("".join(["Send::", obj.address[1:].capitalize()]))
+        [self.activate_single(i, p) for i, p in enumerate(
+            s.params.values()) if p.enabled]
+    
+    def activate_single(self, i, param):
+        self.controls[i].setDisabled(0)
+        self.labels[i].setDisabled(0)
+        self.controls[i].attach_param(param)
+        self.labels[i].setText(param.address)
+    
+    def deactivate(self, obj):
+        try:
+            self.active.remove(obj)
+        except ValueError:
+            pass
+        s = obj.send
+        [self.controls[i].detach_param() for i, p in enumerate(
+            s.params.values()) if p.enabled]
+        print self.active
+        try:
+            self.activate(self.active[-1])
+        except IndexError:
+            [c.setDisabled(1) for c in self.labels + self.controls]
+            self.mainlabel.setDisabled(1)
+
+
+
+
+
+
+
+
 
 
 ##############################
@@ -1811,49 +1969,15 @@ if __name__ == "__main__":
     font = QFont("Inconsolata", 10)
     a.setFont(font)
     w = QHBox()
-    #w.setFixedWidth(800)
-    p = Param(address="/parent")
-    p.set_updates_enabled(0)
-    p1 = Param(address="/p1")
-    p2 = Param(address="/p2", type=bool)
-    p3 = Param(address="/p3")
-    p4 = Param(address="/p4")
-    p5 = Param(address="/p5")
     
-    p.insertChild(p1)
-    p.insertChild(p2)
-    p.insertChild(p3)
-    p3.insertChild(p4)
-    p4.insertChild(p5)
-    checkbox = ParamCheckBox(p2, w)
-    slider = ParamSlider(p3, w)
+    QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
+    b = QVBox(None)
+    w = RoutingView(4, b)
+    z = MiniMachine("Flesh", b)
+    y = MiniMachine("Flesh2", b)
+    z.init_controls()
+    y.init_controls()
     
-    kuk = MiniMachine("kok", w)
-    pkuk = Param(address="/pkuk")
-    slider2 = ParamSlider(pkuk, kuk)
-    
-    kuk.root_param.insertChild(pkuk)
-    kuk.add_small_toggles("/foo", "/you", "xim", "Xampbsa", "Terror", "Foasdji")
-    kuk.init_controls()
-    
-    pp = Param(type=list, address="/foo")
-    ppb = ParamLabel(pp, kuk)
-    pp.set_state(["hoho"])
-    
-    p.set_updates_enabled(1)
-    p.update_paths()
-    
-    
-    #prp = _ParamRoutingPopup(w)
-    #b = QPushButton("KUK", w)
-    #pr = ParamRouting(w)
-    #pr.show_table()
-    #w.connect(b, SIGNAL("clicked()"), popup)
-    
-    #pr.init_controls(p)
-    
-    w.show()
-    
-    a.setMainWidget(w)
-
+    a.setMainWidget(b)
+    b.show()
     a.exec_loop()

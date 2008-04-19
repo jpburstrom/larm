@@ -5,6 +5,8 @@ from qt import *
 from qttable import QTable, QTableItem
 from jmachine import Param, ParamProgress
 
+        
+
 class Routing(QWidget):
     """A variable-sized table with sliders, ideal for signal routing purposes.
     
@@ -22,6 +24,23 @@ class Routing(QWidget):
         self.table1.viewport().setPaletteBackgroundColor(QColor(0,0,0))
         self.table1.setResizePolicy(QTable.AutoOne)
         self.table1.setVScrollBarMode(QTable.AlwaysOff)
+        for r in range(self.table1.numRows()):
+            self.table1.setRowHeight(r, 18)
+            self.table1.setRowStretchable(r, False)
+            pr = Param()#Holding param
+            self.root_param.insertChild(pr)
+            self.params.append(pr) 
+            for c in range(self.table1.numCols()):
+                if r == 0:
+                    self.table1.setColumnWidth(c, self.columnwidth)
+                if self.routeToSelf is True or r is not c:
+                    p = Param(type=float)
+                    pr.insertChild(p)
+                    self.table1.setCellWidget(r, c, ParamProgress(p, self.table1))
+                else:
+                    #do nothing
+                    #self.params[r].append(-1)
+                    self.empty_cells.append((r, c))
         self.table1.setHScrollBarMode(QTable.AlwaysOff)
         self.table1.setShowGrid(0)
         self.table1.setReadOnly(1)
@@ -55,8 +74,9 @@ class Routing(QWidget):
                     p = Param(type=float)
                     pr.insertChild(p)
                     self.table1.setCellWidget(r, c, ParamProgress(p, self.table1))
-                else: 
-                    self.params[r].append(-1)
+                else:
+                    #do nothing
+                    #self.params[r].append(-1)
                     self.empty_cells.append((r, c))
         self.table1.viewport().adjustSize()
         self.table1.adjustSize()
@@ -106,10 +126,9 @@ class Routing(QWidget):
 if __name__ == "__main__":
     a = QApplication(sys.argv)
     QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
-    w = Routing(4, 4, False)
-    f = ["really long one", "6", "7", "8"]
-    fk = ["Jag", "Ar", "Bast", ""]
-    w.setlabels(f, fk)
+    b = QVBox(None)
+    w = RoutingView(4, b)
+    z = MiniMachine("Flesh", b)
     a.setMainWidget(w)
     w.show()
     a.exec_loop()

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2007 Johannes Burström, <johannes@ljud.org>
 #TODO: Perhaps move all osc sending functions to param or similar
-
+#TODO: Large window with all ~ routing
 
 import  os
 import sys
@@ -164,6 +164,8 @@ class Grandel(Machine):
     def __init__(self,label,canvas, parent = None, name = None):
         Machine.__init__(self,label,canvas, parent,name)
         
+        self.is_receiver(1)
+        
         self.container = QHBox(self)
         self.sliderbox = QVBox(self.container)
         self.controls = []
@@ -248,6 +250,8 @@ class Delay(Machine):
     def __init__(self,label,canvas, parent = None, name = None):
         Machine.__init__(self,label,canvas, parent,name)
         
+        self.is_receiver(1)
+        
         self.mastertempo = Param(type=float, address="/master_tempo", min=0, max=32)
         self.mastertempo_sl = LabelSlider(self.mastertempo, "Master Tempo", self)
         self.mastertempo_sl.setTickInterval(4)
@@ -289,7 +293,9 @@ class Spectrldly(Machine):
         p = Param(type=float, address="/pan_spread", min=0, max=1)
         sl = ParamProgress(p, self)
         self.root_param.insertChild(p)
-    
+        
+        self.is_receiver(1)
+        
     def generate_label_tuple(self):
         self.label_tuple = (self.label, (
         ('Time mod', 'Delay Time'),
@@ -323,7 +329,9 @@ class Room(Machine):
     """GUI for the room/reverb"""
     def __init__(self,label,canvas, parent = None, name = None):
         Machine.__init__(self,label,canvas, parent,name)
-    
+        
+        self.is_receiver(1)
+        
     def generate_label_tuple(self):
         self.label_tuple = (self.label, (
         ('Liveness', 'Distance'),
@@ -368,6 +376,8 @@ class Combo(Machine):
             self.root_param.insertChild(self.params[i])
             self.controls.append(LabelSlider(self.params[i], self.slider_labels[i], 
                 self.sliderbox, self.slider_labels[i]))
+        
+        self.is_receiver(1)
             
     def generate_label_tuple(self):
         self.label_tuple = (self.label, (
@@ -643,48 +653,6 @@ class MyArduino(MiniMachine):
         self.escapeaction.setAccel("Esc")
         self.connect(self.escapeaction, SIGNAL("activated()"), self, SLOT("hide()"))
 
-class MyRouting(Routing):
-    """The Routing UI.
-    A Grid of sliders, without connecting machines to itself."""
-    def __init__(self, parent = None,name = None):
-        
-        Routing.__init__(self, 11, 5, True, parent = parent,name = name)
-        
-        self.osc_labels = ["/a4loop-1", "/a4loop-2", "/a4loop-3", "/a4loop-4",
-            "/pm7", "/grandel-1", "/delay-1", "/spectrldly", "/combo-1", 
-            "/adc12", "/adc3"]
-        
-        self.saving = MiniMachine("routing",self,"routingsave")
-        
-        i = 0
-        for p_param in self.params:
-            self.saving.root_param.insertChild(p_param)
-            p_param.set_address(self.osc_labels[i])
-            j = 0
-            for param in p_param.children():
-                param.set_address("".join(["/send" + str(j)]))
-                param.type=float
-                param.max=1000
-                param.min = 0
-                param.set_state(0)
-                j += 1
-            i += 1
-            
-        self.saving.setGeometry(QRect(0,0,314,48))
-        self.table1.move(QPoint(0, 50))
-        
-        
-        labels = ["Loop 1", "Loop 2", "Loop 3", "Loop 4", "pm7",
-            "Grandel", "Delay", "Spectrldly", "Combo", "adc12", "adc3"]
-        self.set_row_labels(QStringList.fromStrList(labels))
-        labels = ["Room", "Grandl", "Delay", "Combo", "Spctrl"]
-        self.set_col_labels(QStringList.fromStrList(labels))
-        
-        #This removes the slider which connects machines to itself
-        l = [5, 6, 8, 7]
-        for cl in range(4):
-            self.clear_cell(l[cl], cl+1)
-
 class MyMenu(QPopupMenu):
     """The beautiful menu button"""
     def __init__(self, parent, name):
@@ -910,6 +878,9 @@ class GuiThread(QMainWindow):
             stream = QTextStream(txtfile)
             self.textedit.setText(stream.read())
         
+        self.sends = RoutingView(5, self.narrowbox)
+        self.sends.setMinimumHeight(200)
+        
         self.logwindow = QTextEdit(self)
         self.logwindow.setFont(QFont("DejaVu Sans Mono", 7))
         self.logwindow.setTextFormat(Qt.LogText)
@@ -927,14 +898,7 @@ class GuiThread(QMainWindow):
 
         self.rec = ArrayRecorder(self.samplelist, self.narrowbox)
         self.rec.setFixedHeight(300)
-
-        self.routing = MyRouting(self.middle_stack)
-        self.middle_stack.addWidget(self.routing, 1)
-        self.middle_stack.raiseWidget(self.routing)
-        self.middle_stack.adjustSize()
-        #self.routing.setGeometry(330, 475, 315, 250)
-        self.machines.append(self.routing.saving)
-
+        
         self.rack1 = QVBox(self)
         self.rack1.setGeometry(20, 30, 300, 716)
         self.rack1.setSpacing(2)
@@ -969,9 +933,9 @@ class GuiThread(QMainWindow):
             if True: #ma is not self.param_routing.saving:
                 qApp.splash.message("Initing %s" % ma.label.title())
                 ma.init_controls()
+                #TODO: add init sends
                 ma.show()
-            self.connect(ma, PYSIGNAL("machine_activated()"), self.machine_activated)
-            self.connect(ma, PYSIGNAL("machine_deactivated()"), self.machine_deactivated)
+                
         self.saving.init_controls()
         #qApp.splash.message("Initing Param routing")
         #self.param_routing.init_controls(self.saving.root_param)
@@ -1003,6 +967,8 @@ class GuiThread(QMainWindow):
         self.osc_host = getgl('osc_address')
         self.osc_port = getgl('osc_port')
         
+        self.connect(qApp, PYSIGNAL("machine_activated()"), self.machine_activated)
+        self.connect(qApp, PYSIGNAL("machine_deactivated()"), self.machine_deactivated)
         self.connect(self.saving.dspbutton, SIGNAL("toggled(bool)"), self.turn_on_dsp)
         self.connect(self.recPathAction, 
             SIGNAL("activated()"), self.recording.choose_recpath)
@@ -1180,17 +1146,10 @@ class GuiThread(QMainWindow):
             osc.sendMsg("/pd/oscdebug", [0], self.osc_host, self.osc_port)
     
     def machine_activated(self):
-        if not self.sender() in self.machines:
-            return
-        if self.middle_stack.visibleWidget() is not self.canvas:
-            self.middle_stack.temporary_widget = self.middle_stack.visibleWidget()
-        self.middle_stack.raiseWidget(self.canvas)
-    
+        pass
+        
     def machine_deactivated(self):
-        if not self.sender() in self.machines:
-            return
-        if self.middle_stack.temporary_widget and not [ma for ma in self.machines if ma.active]:
-            self.middle_stack.raiseWidget(self.middle_stack.temporary_widget)
+        pass
  
     def tgl_x_only(self, arg = None):
         self.status.message("Canvas X only", 1000)
