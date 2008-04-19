@@ -403,10 +403,8 @@ class MainMachine(MiniMachine):
     def __init__(self, *args):
         MiniMachine.__init__(self, *args)
         
-        
         self.dspbutton = QPushButton("_/ _", self)
         self.dspbutton.setToggleButton(1)
-        
         
         self.tempo = Param(address="/tempo", type=float, min=10, max=200)
         self.root_param.insertChild(self.tempo)
@@ -752,14 +750,17 @@ class GuiThread(QMainWindow):
     def __init__(self, starter, *args):
         QMainWindow.__init__(self, *args)
         
+        #Disable Param tree updates for faster loading
+        dummy_update_param = Param()
+        dummy_update_param.set_updates_enabled(0)
+        
+        #calling object
         self.starter = starter
         
         self.setCaption("LARM")
         
-        qApp.mainwindow = self
-        
         self.actions = {}
-        #This is a list, so the background thread can keep a reference
+        #This is a tuple, so the background thread can keep a reference
         #to it...
         self.mouse_finetune = [0]
         
@@ -962,6 +963,7 @@ class GuiThread(QMainWindow):
 ##        self.my_arduino.init_controls()
         
         ##Hook up all machines to base
+        dummy_update_param.set_updates_enabled(1)
         for ma in self.machines:
             self.saving.root_param.insertChild(ma.root_param)
             if True: #ma is not self.param_routing.saving:
@@ -1457,13 +1459,18 @@ class RealPollingThread(QThread):
             QObject.emit(qApp, PYSIGNAL("oscPing"), ())
             resetRel()
             poll()
+            mult = 8
+            if finetune[0]:
+                mult = 0.4
             if machines and self.active:
-                d.axes['REL_X'] = d.axes['REL_X'] * 8 #abs(d.axes['REL_X'])
-                d.axes['REL_Y'] = d.axes['REL_Y']* 8 #abs(d.axes['REL_Y'])
-                if finetune[0]:
-                    d.axes['REL_X'] /= 20.0
-                    d.axes['REL_Y'] /= 20.0
-                [QObject.emit(m, PYSIGNAL("rawMouseEvents"), (d,)) for m in machines]
+                d.axes['REL_X'] *= mult
+                d.axes['REL_Y'] *= mult
+                #iterate over copy
+                #FIXME
+                try:
+                    [QObject.emit(m, PYSIGNAL("rawMouseEvents"), (d,)) for m in machines.copy()]
+                except AttributeError, e:
+                    print "Attribute Error in polling thread: %s" % e
             sleep(polltime)
         
 

@@ -46,6 +46,7 @@ class Param(QObject):
     """
     
     _paths = {} # full_address->object dictionary
+    _update = True
     
     def __init__(self, **kwargs):
         QObject.__init__(self)
@@ -118,11 +119,12 @@ class Param(QObject):
         if not isinstance(child, Param):
             raise TypeError, "Only Param children to Param parents."
         QObject.insertChild(self, child)
-        ql = self.queryList("Param")
-        for o in ql:
-            o.full_address = o.parent().full_address + o.address
-            o.set_save_address()    
-            o.update_paths()
+        if self.__class__._update:
+            ql = self.queryList("Param")
+            for o in ql:
+                o.full_address = o.parent().full_address + o.address
+                o.set_save_address()    
+                o.update_paths()
     
     def removeChild(self, child):
         """Remove Param child.
@@ -154,17 +156,18 @@ class Param(QObject):
     def update_paths(self):
         """All things that needs to be done after changing local address."""
         
-        osc.bind(None, "/incoming" + self.full_address)
-        if self.parent():
-            self.full_address = self.parent().full_address + self.address
-        else:
-            self.full_address = self.address
-        self.__class__._paths[self.full_address] = self
-        osc.bind(self.handle_incoming_osc, "/incoming" + self.full_address)
-        self.set_save_address(None, False)
-        ql = self.queryList("Param", None, True, False) #Non-recursive
-        [o.update_paths() for o in ql if \
-        o.full_address != o.parent().full_address + o.address]
+        if self.__class__._update:
+            osc.bind(None, "/incoming" + self.full_address)
+            if self.parent():
+                self.full_address = self.parent().full_address + self.address
+            else:
+                self.full_address = self.address
+            self.__class__._paths[self.full_address] = self
+            osc.bind(self.handle_incoming_osc, "/incoming" + self.full_address)
+            self.set_save_address(None, False)
+            ql = self.queryList("Param", None, True, False) #Non-recursive
+            [o.update_paths() for o in ql if \
+            o.full_address != o.parent().full_address + o.address]
                 
         
     def find_param_from_path(self, path):
@@ -341,6 +344,15 @@ class Param(QObject):
             self.full_save_address = self.save_address
         if updatechildren:
             [o.set_save_address(None, True) for o in self.queryList("Param", None, True, False)]
+        
+    def set_updates_enabled(self, updates):
+        """ Disable path/tree updates for all params
+        
+        Useful for faster loading of many params: otherwise a recursive tree
+        update is made for every new instance. Just remember to enable updates 
+        and do an update from the root when all params are instantiated.
+        """
+        self.__class__._update = updates
 
 class ParamController(QObject):
     def __init__(self, *args):
@@ -581,6 +593,8 @@ class ParamThreeStateButton(QPushButton):
             s = 2
         elif ev.button() in (1,2):
             s = 0
+        else:
+            return
         self.set_state(s)
         self.param.set_state(s)
     
@@ -1799,6 +1813,7 @@ if __name__ == "__main__":
     w = QHBox()
     #w.setFixedWidth(800)
     p = Param(address="/parent")
+    p.set_updates_enabled(0)
     p1 = Param(address="/p1")
     p2 = Param(address="/p2", type=bool)
     p3 = Param(address="/p3")
@@ -1824,6 +1839,10 @@ if __name__ == "__main__":
     pp = Param(type=list, address="/foo")
     ppb = ParamLabel(pp, kuk)
     pp.set_state(["hoho"])
+    
+    p.set_updates_enabled(1)
+    p.update_paths()
+    
     
     #prp = _ParamRoutingPopup(w)
     #b = QPushButton("KUK", w)

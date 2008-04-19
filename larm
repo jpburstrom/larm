@@ -20,6 +20,14 @@
 
 
 import sys, os
+from subprocess import *
 
-cmd = "".join(["nice -n15 ", sys.path[0], "/main.py"])
-os.system(cmd)
+f = open("%s/larm.log" % sys.path[0], "w")
+
+cmd = "".join(["nice -n15 ", sys.path[0], "/main.py "])
+try:
+    p = Popen(cmd, stdout=f, stderr=f, env = os.environ, shell=True)
+    p.wait()
+except Exception,e:
+    f.append(e)
+    print e

@@ -31,8 +31,8 @@ class _ImageItem(QCanvasRectangle):
 
 
 class _FigureEditor(QCanvasView):
-    def __init__(self,c,parent,name,f):
-        QCanvasView.__init__(self,c,parent,name,f)
+    def __init__(self,c,*args):
+        QCanvasView.__init__(self,c,*args)
         self.__moving=0
         self.__moving_start= 0
         self.adjustSize()
@@ -61,11 +61,11 @@ class MarioDots(QHBox):
     Used for displaying data, represented as 5 x/y points on a 
     canvas. The canvas have sets of dots that can be shown/hidden,
     and each dot is moved independently."""
-    def __init__(self,parent,name,f=0):
-        QHBox.__init__(self,parent,name,f)
+    def __init__(self,*args):
+        QHBox.__init__(self,*args)
         self.canvas=QCanvas(300,300)
         self.canvas.setUpdatePeriod(40)
-        self.editor=_FigureEditor(self.canvas,self,name,f)
+        self.editor=_FigureEditor(self.canvas,self)
         self.canvas.setBackgroundColor(QColor(200, 200, 200))
         self.container = QRect() # the container within
         self.sets = {} #sets of dots
@@ -89,7 +89,6 @@ class MarioDots(QHBox):
     
     def mousePressEvent(self, e):
         """Mouse press activates canvas"""
-        
         self.canvas.setBackgroundColor(QColor(150, 200, 240))
         qApp.setOverrideCursor(QCursor(Qt.BlankCursor))
         self.cpos = self.mapToGlobal(e.pos())
@@ -219,3 +218,11 @@ class MarioDots(QHBox):
         i.setPen( QPen(QColor("white"), 2) )
         i.setZ(0)
         i.show()
+
+if __name__ == "__main__":
+    a = QApplication(sys.argv)
+    QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
+    w = MarioDots(None)
+    a.setMainWidget(w)
+    w.show()
+    a.exec_loop()
