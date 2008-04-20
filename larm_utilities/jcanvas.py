@@ -55,7 +55,7 @@ class _FigureEditor(QCanvasView):
             self.canvas().update()
 
 
-class MarioDots(QHBox):
+class LarmCanvas(QHBox):
     """A display-only canvas with 5 dots.
     
     Used for displaying data, represented as 5 x/y points on a 
@@ -222,7 +222,7 @@ class MarioDots(QHBox):
 if __name__ == "__main__":
     a = QApplication(sys.argv)
     QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
-    w = MarioDots(None)
+    w = LarmCanvas(None)
     a.setMainWidget(w)
     w.show()
     a.exec_loop()

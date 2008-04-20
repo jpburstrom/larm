@@ -11,10 +11,11 @@ from time import sleep
 import copy
 
 import osc
-
+_tree = {}
+    
 from canvaslabel import Canvasinfo
 from larmglobals import getgl, dbp, alert
-from xmlsave import XmlSaving
+from easysave import EasySave
 
 if osc.addressManager is 0:
     osc.init()
@@ -29,7 +30,20 @@ class Bang(list):
 
     def __init__(self, *args):
         pass
-    
+    def __repr__(self):
+        return "<Param Bang type>"
+    def __str__(self):
+        return "Bang"
+        
+class Container(object):
+    """Empty container object to make stateless container Param """
+    def __init__(self, *args):
+        pass
+    def __repr__(self):
+        return "<Param Container type>"
+    def __str__(self):
+        return "Container"
+
 class Param(QObject):
     """Abstract gui element/machine parameter class.
     
@@ -60,7 +74,7 @@ class Param(QObject):
         self.update_paths()
         
         self.label = kwargs.get('label') or ""
-        self.type = kwargs.get('type') or float ## int, str, bool, float, Bang
+        self.type = kwargs.get('type') or float ## int, str, bool, float, Bang, Container
         self.max = kwargs.get('max') or 1.0
         self.min = kwargs.get('min') or 0.0
         
@@ -81,9 +95,7 @@ class Param(QObject):
         self.UpdateMax = 4
         
         self._enableosc = True
-        self._saveable = True
-        if self.type is Bang:
-            self.set_saveable(False)
+        self._saveable = self.type not in (Bang, Container)
         
         self._connections_send = set()
         self._connections_recv = set()
@@ -93,7 +105,7 @@ class Param(QObject):
         self.osc = osc
         self.osc_host = getgl('osc_address')
         self.osc_port = getgl('osc_port')
-
+        
     def set_address(self, address):
         """Set new local address.
         
@@ -160,15 +172,16 @@ class Param(QObject):
             osc.bind(None, "/incoming" + self.full_address)
             if self.parent():
                 self.full_address = self.parent().full_address + self.address
+                
             else:
                 self.full_address = self.address
             self.__class__._paths[self.full_address] = self
             osc.bind(self.handle_incoming_osc, "/incoming" + self.full_address)
             self.set_save_address(None, False)
             ql = self.queryList("Param", None, True, False) #Non-recursive
+            self._children = list(ql)
             [o.update_paths() for o in ql if \
             o.full_address != o.parent().full_address + o.address]
-                
         
     def find_param_from_path(self, path):
         """Return param object from full path, None if not existing"""
@@ -177,10 +190,19 @@ class Param(QObject):
             
     def set_saveable(self, boo):
         """Set if param is possible to save in presets, bool"""
-        self._saveable = boo
+        self._saveable = boo and self.type not in (Container, Bang)
+        
     def is_saveable(self):
         """If param is possible to save in preset"""
         return self._saveable
+    
+    def is_container(self):
+        """Return if param is container"""
+        return self.type is Container
+    
+    def is_bang(self):
+        """Return if param is container"""
+        return self.type is Bang
         
     def set_enableosc(self, boo):
         """Enable OSC send, bool"""
@@ -200,7 +222,9 @@ class Param(QObject):
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
         if echo:
             qApp.emit(PYSIGNAL("paramEcho"), (self.address, v))
-            
+        if self.type is list:
+            print v 
+
     def within(self, v):
         """Makes sure the state value is between boundaries, if applicable."""
         
@@ -248,11 +272,13 @@ class Param(QObject):
             return (self.full_address, state)
         if recursive:
             bundle = self.osc.createBundle()
+            print bundle
             self.osc.appendToBundle(bundle, self.full_address, state)
             for p in self.queryList("Param"):
                 k = p.send_to_osc(False, True)
                 self.osc.appendToBundle(bundle, k[0], k[1])
             self.osc.sendBundle(bundle, self.osc_host, self.osc_port)
+            print bundle
             return
         self.oscSend(self.full_address, state, self.osc_host, self.osc_port)
 ##        if OSCDEBUG:
@@ -881,7 +907,8 @@ class PresetComboBox(QHBox):
         
     def my_hide(self):
         self.cb.setEditable(False)
-        self.cb.setFocusPolicy(self.NoFocus)
+        #self.cb.setFocusPolicy(self.NoFocus)
+        self.cb.clearFocus()
         QTimer.singleShot(200, self.really_hide)
     
     def really_hide(self):
@@ -1117,9 +1144,9 @@ class MiniMachine(QVBox):
             pass
         
         #parent of everything.
-        self.root_param = Param(address=self.address)
+        self.root_param = Param(type=Container, address=self.address)
         
-        self.saving = XmlSaving()
+        self.saving = EasySave()
         
         #different instances of same machine can share save data if they append #[n]
         #to the instances' labels. This (anything after hash) will be removed.
@@ -1132,7 +1159,7 @@ class MiniMachine(QVBox):
         self.localsnap = []
         
         #====ROUTING====#
-        s = Param(address="/send")
+        s = Param(type=Container, address="/send")
         self.root_param.insertChild(s)
         self.send = RoutingModel(s)
         self.is_routing_sender = True
@@ -1162,7 +1189,7 @@ class MiniMachine(QVBox):
         self.buttonrow.setSpacing(2)
         
         self.snapbuttons = SnapButtonGroup(self.buttonrow, 4)
-        self.seqparam = Param(address="/seq")
+        self.seqparam = Param(type=Container, address="/seq")
         
         self.root_param.insertChild(self.seqparam)
         self.seqparam.set_saveable(0)
@@ -1294,8 +1321,7 @@ class MiniMachine(QVBox):
             self.tek.setPaletteForegroundColor(QColor("beige"))
 
     def on_off(self, arg = None):
-        """Turn the bastard on and off. Toggle or set.
-        The argument can be 0 or 1 for off and on, or None for toggle."""
+        """Turn Machine on and off."""
         if not self.onoff.get_state() and arg != 0:
             self.tek.setPaletteForegroundColor(QColor("Green"))
             self.onoff.set_state(1)
@@ -1554,7 +1580,7 @@ class Machine(MiniMachine):
                     pass
     
     def load_preset(self, current_preset, callback):
-        """redefine this to make something before loading presets"""
+        """redefine this to do something before loading presets"""
         MiniMachine.load_preset(self, current_preset, callback)
         self.call_for_canvas_update()
 
@@ -1651,25 +1677,76 @@ class RoutingView(QWidget):
         s = obj.send
         [self.controls[i].detach_param() for i, p in enumerate(
             s.params.values()) if p.enabled]
-        print self.active
         try:
             self.activate(self.active[-1])
         except IndexError:
             [c.setDisabled(1) for c in self.labels + self.controls]
             self.mainlabel.setDisabled(1)
 
+#===============================
+#===SAVE SELECTOR
+#===============================
 
-
-
-
-
-
-
-
-
+class _SaveSelectorItem(QCheckListItem):
+    def __init__(self, root, *args):
+        QCheckListItem.__init__(self, *args)
+        
+        self.root = root
+        self.setOn(root.is_saveable() and not root.is_container())
+        self.setEnabled(not root.is_bang())
+        
+    def stateChange(self, num):
+        QCheckListItem.stateChange(self, num)
+        self.root.set_saveable(num)
+    
+class SaveSelector(QListView):
+    def __init__(self, root=None, *args):
+        QListView.__init__(self, *args)
+        self.root = root
+        
+        self.tree ={}
+        
+        self.addColumn("Name")
+        self.addColumn("Type")
+        
+        self.connect(self, 
+            SIGNAL("rightButtonClicked(QListViewItem *,const QPoint&, int)"), 
+            self.on_right_click)
+        
+    def show(self, root=None):
+        if root and root is not self.root:
+            self.root = root
+            self.rebuild(root)
+        QListView.show(self)
+    
+    def rebuild(self, root=None):
+        if root:
+            self.root = root
+        if self.root:
+            self.tree = {self.root : _SaveSelectorItem(self.root, 
+                self, self.root.address, QCheckListItem.CheckBoxController)}
+            [self.new_selector_item(o) for o in self.root.queryList("Param")]
+    
+    def new_selector_item(self, o):
+        if o.is_container():
+            type = QCheckListItem.CheckBoxController
+        else:
+            type = QCheckListItem.CheckBox
+        self.tree[o] = _SaveSelectorItem(o, self.tree[o.parent()], o.address, type)
+    
+    def on_right_click(self, i, a, u):
+        if i:
+            it = QListViewItemIterator(i)
+            tgl = not i.isOpen()
+            while it.current() and it.current() is not i.nextSibling():
+                it.current().setOpen(tgl)
+                it += 1
+            
+        
 ##############################
 ##PARAM ROUTING
-##############################
+#############################
+
 
 class _ParamRoutingPopup(QPopupMenu):
     def __init__(self, param, *args):
@@ -1969,13 +2046,26 @@ if __name__ == "__main__":
     font = QFont("Inconsolata", 10)
     a.setFont(font)
     w = QHBox()
-    
     QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
     b = QVBox(None)
     w = RoutingView(4, b)
     z = MiniMachine("Flesh", b)
     y = MiniMachine("Flesh2", b)
+    
+    for i in range(5):
+        p = Param(address="/test%d" % i)
+        pr = ParamProgress(p, y)
+        y.root_param.insertChild(p)
+        for i in range(5):
+            pp = Param(address="/test%d" % i)
+            p.insertChild(pp)
+    
+    
     z.init_controls()
+    
+    sa = SaveSelector(None, b)
+    sa.show(y.root_param)
+    
     y.init_controls()
     
     a.setMainWidget(b)

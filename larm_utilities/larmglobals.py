@@ -26,7 +26,7 @@ def getgl(key):
         "audiodb_path" : 'audiodb/data.db', #relative (to script) or absolute path to audiofile db
         "samplerate" : 48000, #samplerate of backend, needed to calculate rec buffer labels 
         "txtfile" : path.expanduser("~/.larm/notes.txt"), #file with notes
-        "preset_file" : path.expanduser('~/.larm/presets.xml')
+        "preset_file" : path.expanduser('~/.larm/presets.py')
         }
 
     return gl[key]
@@ -78,7 +78,7 @@ def get_keyboard(caller):
                 "CTRL+E" : caller.mlp3.on_off,
                 "CTRL+R" : caller.mlp4.on_off,
                 "Ctrl+Tab"     : caller.pm7.toggle_page,
-                "Tab"     : caller.switch_middle_stack,
+                #"Tab"     : caller.switch_middle_stack,
                 "SHIFT+T" : caller.pm7.tgl_active,
                 "SHIFT+A" : caller.grandel.tgl_active,
                 "SHIFT+S" : caller.delay.tgl_active,

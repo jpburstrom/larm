@@ -116,7 +116,14 @@ class XmlSaving:
                         node = nunode
             #and set the attrs for the param
             node.set('type', el.type.__name__)
-            node.set('state', str(el.get_state()))
+            #node.set('state', "||".join(str(i) for i in el.get_state()))
+            if el.type is list:
+                node.clear()
+                for l in el.get_state():
+                    nunode = ET.subelement(9
+            else:
+                node.set('state', str(el.get_state()))
+            
         try:    
             ET.ElementTree(self.__class__.root).write(self.path)
         except IOError:
@@ -160,6 +167,9 @@ class XmlSaving:
                 continue
             if pp.get('type') == 'bool':
                 state = eval(pp.get('state'))
+            elif pp.get('type') == 'list':
+                state = pp.get('state').split("||")
+                print state
             else:
                 state = pp.get('state')
             p.set_state(eval(pp.get('type'))(state))

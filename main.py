@@ -28,14 +28,7 @@ class MouseLooper(Machine):
         self.setAcceptDrops(1)
         self.sample_loaded = None
         self.sample_path = None
-        
-        self.chkbox = QCheckBox(self.tek, "savesample")
-        self.chkbox.setGeometry(0, 0, 12,12)
-        self.connect(self.chkbox, SIGNAL("toggled(bool)"), self.set_chkbox_color)
-        QToolTip.add(self.chkbox, "Save with sample")
-        self.connect(self.chkbox, SIGNAL("toggled(bool)"), 
-            self.set_sample_save)
-        
+    
         self.qslider_param = Param(address="/quantizestep", type=int, max=48, min=0)
         self.root_param.insertChild(self.qslider_param)
         self.qslider = LabelSlider(self.qslider_param, "Quantize Slider", self)
@@ -78,15 +71,6 @@ class MouseLooper(Machine):
         if self.sample_loaded != lst:
             self.buffer_param.set_state(lst)
             self.sample_loaded = lst
-    
-    def set_chkbox_color(self, boo):
-        if boo:
-            self.chkbox.setPaletteBackgroundColor(Qt.green)
-        else:
-            self.chkbox.setPaletteBackgroundColor(Qt.white)
-
-    def set_sample_save(self, boo):
-        self.buffer_param.set_saveable(boo)
     
     def generate_label_tuple(self):
         self.label_tuple = (self.label, (
@@ -659,23 +643,26 @@ class MyMenu(QPopupMenu):
         QPopupMenu.__init__(self, parent, name)
         p = self.parent()
         p.recPathAction = QAction("Set rec path", 
-            QKeySequence("F12"), p, "recPathAction")
+            QKeySequence("F12"), p)
         p.recPathAction.addTo(self)
         p.startTimerAction = QAction("Start timer",
-            QKeySequence("F11"), p, "startTimerAction")
+            QKeySequence("F11"), p)
         p.startTimerAction.addTo(self)
         
-        p.focusText = QAction("Edit text",
-            QKeySequence("F10"), p, "focusText")
+        p.focusText = QAction("Edit text", QKeySequence("F10"), p)
         p.focusText.addTo(self)
         p.focusText.setToggleAction(1)
         #p.toggleParamRouting = QAction("Param Routing",
         #    QKeySequence("F9"), p, "toggleParamRouting")
         #p.toggleParamRouting.addTo(self)
-        p.toggleLogWindow = QAction("Log Window",
-            QKeySequence("F9"), p, "toggleLogWindow")
+        p.toggleLogWindow = QAction("Log Window", QKeySequence("F9"), p)
         p.toggleLogWindow.addTo(self)
         #p.toggleArduinoCalib = QAction("Arduino Calibration", QKeySequence("F7"), p, "toggleArduinoCalib")
+        #p.toggleArduinoCalib.addTo(self)
+        p.toggleMiddleStack = QAction(
+            "Toggle Canvas/Save paths/...", QKeySequence("Shift+F9"), p)
+        p.helpWindow = QAction(
+            "Toggle Canvas/Save paths/...", QKeySequence("Shift+F10"), p)
         #p.toggleArduinoCalib.addTo(self)
         p.restart_pd = QAction(p, "restart_pd")
         p.restart_pd.setText("Restart PD")
@@ -811,9 +798,11 @@ class GuiThread(QMainWindow):
         """
         
         self.middle_stack = QWidgetStack(self.middle_rack)
-        self.middle_stack.temporary_widget = None
-        self.canvas = MarioDots(self.middle_stack, "Hej hej")
+        self.canvas = LarmCanvas(self.middle_stack, "Hej hej")
         self.middle_stack.addWidget(self.canvas, 0)
+        
+        self.save_selector = SaveSelector(self.middle_stack)
+        self.middle_stack.addWidget(self.save_selector, 1)
         
         #this should be before samplers(?)
         self.urack = QVBox(self)
@@ -937,6 +926,9 @@ class GuiThread(QMainWindow):
                 ma.show()
                 
         self.saving.init_controls()
+        
+        self.save_selector.rebuild(self.saving.root_param)
+        
         #qApp.splash.message("Initing Param routing")
         #self.param_routing.init_controls(self.saving.root_param)
         self.pm7.show()
@@ -978,11 +970,15 @@ class GuiThread(QMainWindow):
             SIGNAL("timeout()"), self.action_count_timer)
         self.connect(self.quitAction, SIGNAL("activated()"), self.endcommand)
         self.connect(self.focusText, SIGNAL("toggled(bool)"), 
-            self.toggle_textedit_focus)
+            self.menu_actions)
 ##        self.connect(self.toggleParamRouting, SIGNAL("activated()"), 
 ##            self.param_routing.toggle_show)
         self.connect(self.toggleLogWindow, SIGNAL("activated()"), 
-            self.toggle_log_window)
+            self.menu_actions)
+        self.connect(self.toggleMiddleStack, SIGNAL("activated()"), 
+            self.menu_actions)
+        self.connect(self.helpWindow, SIGNAL("activated()"), 
+            self.menu_actions)
 ##        self.connect(self.toggleArduinoCalib, SIGNAL("activated()"),
 ##            self.toggle_arduino_calibration)
 ##        self.connect(self.param_routing.tpr, SIGNAL("activated()"), 
@@ -1041,30 +1037,43 @@ class GuiThread(QMainWindow):
     def deactivate_all(self):
         [ma.deactivate() for ma in self.machines if ma.active]
         self.toggle_piano_mode(0)
+        self.logwindow.setGeometry(320, 710, 475, 55)
     
     def stop_all(self):
         [ma.on_off(0) for ma in self.machines]
       
-    def toggle_textedit_focus(self, boo):
-        if boo:
-            self.textedit.setFocus()
-        else:
-            self.textedit.clearFocus()
-            self.setFocus()
+    def menu_actions(self, boo=None):
+        if self.sender() is self.focusText:
+            if boo:
+                self.textedit.setFocus()
+            else:
+                self.textedit.clearFocus()
+                self.setFocus()
+        elif self.sender() is self.toggleLogWindow:
+            if self.logwindow.height() < 300:
+                self.logwindow.setGeometry(200, 200, 600, 400)
+                self.logwindow.raiseW()
+            else:
+                self.logwindow.setGeometry(320, 710, 475, 55)
+        elif self.sender() is self.toggleMiddleStack:
+            m = self.middle_stack
+            m.raiseWidget(
+                m.widget(m.id(m.visibleWidget()) + 1) or 0)
+        elif self.sender() is self.helpWindow:
+            self.logwindow.setGeometry(200, 200, 600, 400)
+            self.logwindow.raiseW()
+            self.print_help()
+    
+    def print_help(self):
+        self.logwindow.append("""Help for Larm
+=============
+Soon.
+""")
+            
             
     def show_param_echo(self, *things):
         self.status_paramlabel.setText("%s: %.2f" % things)
     
-    def switch_middle_stack(self):
-        m = self.middle_stack
-        m.raiseWidget((m.id(m.visibleWidget()) * -1) + 1)
-    
-    def toggle_log_window(self):
-        if self.logwindow.height() < 300:
-            self.logwindow.setGeometry(200, 200, 600, 400)
-            self.logwindow.raiseW()
-        else:
-            self.logwindow.setGeometry(320, 710, 475, 55) 
     
     def toggle_arduino_calibration(self):
         if not self.my_arduino.isShown():

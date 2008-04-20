@@ -14,7 +14,7 @@ to be continued...
 __version__ = "$Revision$"
 
 
-from jcanvas import MarioDots
+from jcanvas import LarmCanvas
 from jmachine import *
 from jpopuplist import SampleList 
 from jrouting import Routing
