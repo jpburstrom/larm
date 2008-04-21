@@ -28,7 +28,7 @@ class MouseLooper(Machine):
         self.setAcceptDrops(1)
         self.sample_loaded = None
         self.sample_path = None
-    
+        
         self.qslider_param = Param(address="/quantizestep", type=int, max=48, min=0)
         self.root_param.insertChild(self.qslider_param)
         self.qslider = LabelSlider(self.qslider_param, "Quantize Slider", self)
@@ -194,12 +194,6 @@ class Grandel(Machine):
     
     def on_window_change(self, v):
         self.windowlabel.setPixmap(self.windows[9-v])
-    
-    def update_controls(self, preset = None):
-        if self.freezebtn_param.get_state():
-            self.freezebtn.setPaletteForegroundColor(QColor(255,0,0))
-        else:
-            self.freezebtn.setPaletteForegroundColor(QColor(0,0,0))
     
     def generate_label_tuple(self):
         self.label_tuple = (self.label, (
@@ -900,8 +894,8 @@ class GuiThread(QMainWindow):
         self.delay = Delay("Delay", self.canvas, self.rack1)
         self.machines.append(self.delay)
         
-        self.spectrldly = Spectrldly("SpectrlDly", self.canvas, self.rack1)
-        self.machines.append(self.spectrldly)
+#       self.spectrldly = Spectrldly("SpectrlDly", self.canvas, self.rack1)
+#       self.machines.append(self.spectrldly)
         
         self.combo = Combo("Combo", self.canvas, self.middle_rack)
         self.machines.append(self.combo)
@@ -945,9 +939,19 @@ class GuiThread(QMainWindow):
         #This is the main mode. It's about how we treat key presses.
         #we also have the piano mode (2)
         self.current_mode = 1
-        self.piano_keys = [90, 83, 88, 68, 67, 86, 71, 66, 72, 78, 74, 77,
-            81, 50, 87, 51, 69, 82, 53, 84, 54, 89, 55, 85, 
-            73, 57, 79, 48, 80]
+        if not getgl('accordion_mode'):
+            self.piano_keys = [90, 83, 88, 68, 67, 86, 71, 66, 
+            72, 78, 74, 77, 81, 50, 87, 51, 69, 82, 53, 84, 54, 
+            89, 55, 85, 73, 57, 79, 48, 80]
+        elif getgl('accordion_mode') is 1:
+            self.piano_keys = [90, 83, 69, 88, 68, 82, 67, 70, 
+            84, 86, 71, 89, 66, 72, 85, 78, 74, 73, 77, 75, 79, 
+            44, 76, 80, 46]
+        else:
+            self.piano_keys = [81,50,65,87,51,90,83,69,52,88,68,82,
+            53,67,70,84,54,86,71,89,55,66,72,85,56,78,74,73,57,77,75,
+            79,48,44,76,80,43,46]
+
         self.host = getgl('osc_address')
         self.port = getgl('osc_port')
         

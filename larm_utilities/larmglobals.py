@@ -26,7 +26,8 @@ def getgl(key):
         "audiodb_path" : 'audiodb/data.db', #relative (to script) or absolute path to audiofile db
         "samplerate" : 48000, #samplerate of backend, needed to calculate rec buffer labels 
         "txtfile" : path.expanduser("~/.larm/notes.txt"), #file with notes
-        "preset_file" : path.expanduser('~/.larm/presets.py')
+        "preset_file" : path.expanduser('~/.larm/presets.py'),
+        "accordion_mode" : 2
         }
 
     return gl[key]
@@ -49,7 +50,7 @@ def get_keyboard(caller):
                     "t" : caller.pm7.tgl_active,
                     "a" : caller.grandel.tgl_active,
                     "s" : caller.delay.tgl_active,
-                    "d" : caller.spectrldly.tgl_active,
+#                    "d" : caller.spectrldly.tgl_active,
                     "f" : caller.combo.tgl_active,
                     "g" : caller.room.tgl_active,
                     "x" : caller.tgl_x_only,
@@ -64,7 +65,7 @@ def get_keyboard(caller):
                     "t" : caller.pm7.on_off,
                     "a" : caller.grandel.on_off,
                     "s" : caller.delay.on_off,
-                    "d" : caller.spectrldly.on_off,
+#                    "d" : caller.spectrldly.on_off,
                     "f" : caller.combo.on_off,
                     "g" : caller.room.on_off,
                  }
@@ -82,17 +83,17 @@ def get_keyboard(caller):
                 "SHIFT+T" : caller.pm7.tgl_active,
                 "SHIFT+A" : caller.grandel.tgl_active,
                 "SHIFT+S" : caller.delay.tgl_active,
-                "SHIFT+D" : caller.spectrldly.tgl_active,
+#               "SHIFT+D" : caller.spectrldly.tgl_active,
                 "SHIFT+F" : caller.combo.tgl_active,
                 "SHIFT+G" : caller.room.tgl_active,
                 "CTRL+T" : caller.pm7.on_off,
                 "CTRL+A" : caller.grandel.on_off,
                 "CTRL+S" : caller.delay.on_off,
-                "CTRL+D" : caller.spectrldly.on_off,
+#               "CTRL+D" : caller.spectrldly.on_off,
                 "CTRL+F" : caller.combo.on_off,
                 "CTRL+G" : caller.room.on_off,
                 "Esc"   : caller.deactivate_all, 
-                "CapsLock": caller.action_show_numbers,
+                "Tab": caller.action_show_numbers,
                 "Space": caller.action_machine_onoff,
                 "CTRL+Esc" : caller.stop_all,
                 "CTRL+V"     : caller.toggle_piano_mode

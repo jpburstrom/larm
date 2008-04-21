@@ -21,7 +21,6 @@ class EasySave(object):
         
         if self.__class__.presets is not None:
             return
-        print "TSERT"
         try:
             f = open(self.path, 'r')
         except IOError:
@@ -44,17 +43,23 @@ class EasySave(object):
     def save_preset(self, presetname, param, replace = True):
         """Saves all child items of param as preset
         
-        args: Desired preset name, base param, replace = clear preset before update"""        
-        if not param.full_address in self.__class__.presets:
-            self.__class__.presets[param.full_address] = {}
+        args: Desired preset name, base param, replace = clear preset before update"""  
+        if not presetname:
+            return
+            
+        sa = param.full_save_address
+        if not sa in self.__class__.presets:
+            self.__class__.presets[sa] = {}
         
-        if not presetname in self.__class__.presets[param.full_address] or replace:
-            self.__class__.presets[param.full_address][presetname] = {}
+        if not presetname in self.__class__.presets[sa] or replace:
+            self.__class__.presets[sa][presetname] = {}
             
         for el in param.queryList("Param"):
             if not el.is_saveable():
                 continue
-            self.__class__.presets[param.full_address][presetname][el.full_address] = el.get_state()
+            add = param.full_save_address
+            self.__class__.presets[param.full_save_address][presetname][self.make_save_add(
+                param, el)] = el.get_state()
         
         self.write_file()
         
@@ -62,16 +67,21 @@ class EasySave(object):
         """Loads a preset into param"""
         #Find the node in question
         try:
-            preset = self.__class__.presets[param.full_address][presetname]
+            preset = self.__class__.presets[param.full_save_address][presetname]
         except KeyError:
             self.load_error()
             return
         plist = param.queryList('Param')
         for p in plist:
             try:
-                p.set_state(preset[p.full_address])
+                p.set_state(preset[self.make_save_add(param, p)])
             except KeyError:
-                print "KE"
+                pass
+    
+    def make_save_add(self, parent, el):
+        return "".join((parent.full_save_address,
+            el.full_address[len(parent.full_address):]))
+        
             
     def delete_preset(self, presetname, param):
         if not self.__class__.presets[param.full_address].pop(presetname, None):
@@ -84,7 +94,6 @@ class EasySave(object):
         
         Returns list of preset names."""
         
-        print self.__class__.presets
         try:
             presets = self.__class__.presets[param.full_address].keys()
         except KeyError:

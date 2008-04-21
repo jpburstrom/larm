@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project larm -->
-<!-- Saved: 2008-01-02, 13:36:21 -->
+<!-- Saved: 2008-04-20, 19:00:34 -->
 <!-- Copyright (C) 2008 Johannes Burström, johannes@ljud.org -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -21,10 +21,6 @@
     </Source>
     <Source>
       <Dir>larm_utilities</Dir>
-      <Name>canvaslabel.py</Name>
-    </Source>
-    <Source>
-      <Dir>larm_utilities</Dir>
       <Name>mouse.py</Name>
     </Source>
     <Source>
@@ -41,15 +37,7 @@
     </Source>
     <Source>
       <Dir>larm_utilities</Dir>
-      <Name>canvascon.py</Name>
-    </Source>
-    <Source>
-      <Dir>larm_utilities</Dir>
       <Name>jcanvas.py</Name>
-    </Source>
-    <Source>
-      <Dir>larm_utilities</Dir>
-      <Name>jsnapbuttons.py</Name>
     </Source>
     <Source>
       <Dir>larm_utilities</Dir>
@@ -69,6 +57,10 @@
     <Source>
       <Dir>larm_utilities</Dir>
       <Name>tag_editor.py</Name>
+    </Source>
+    <Source>
+      <Dir>larm_utilities</Dir>
+      <Name>easysave.py</Name>
     </Source>
   </Sources>
   <Forms>
@@ -90,10 +82,10 @@
   </Vcs>
   <FiletypeAssociations>
     <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
-    <FiletypeAssociation pattern="*.ui" type="FORMS" />
-    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
-    <FiletypeAssociation pattern="*.py" type="SOURCES" />
     <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
   </FiletypeAssociations>
   <PyLint>
     <PyLintParams>(dp0
@@ -106,37 +98,37 @@ I01
 sS'enableClasses'
 p3
 I01
-sS'enableExceptions'
+sS'enableFormat'
 p4
 I01
-sS'enableFormat'
+sS'txtReport'
 p5
-I01
-sS'enableMetrics'
+I00
+sS'enableDesign'
 p6
 I01
-sS'dialogReport'
+sS'configFile'
 p7
+V/home/johannes/python/sc/lint.cfg
+p8
+sS'enableMetrics'
+p9
 I01
 sS'enableVariables'
-p8
+p10
+I01
+sS'dialogReport'
+p11
 I01
 sS'htmlReport'
-p9
-I00
-sS'configFile'
-p10
-V/home/johannes/python/sc/lint.cfg
-p11
-sS'enableDesign'
 p12
-I01
+I00
 sS'enableBasic'
 p13
 I01
-sS'txtReport'
+sS'enableExceptions'
 p14
-I00
+I01
 sS'enableSimilarities'
 p15
 I01

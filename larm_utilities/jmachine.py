@@ -222,8 +222,6 @@ class Param(QObject):
         self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
         if echo:
             qApp.emit(PYSIGNAL("paramEcho"), (self.address, v))
-        if self.type is list:
-            print v 
 
     def within(self, v):
         """Makes sure the state value is between boundaries, if applicable."""
@@ -272,13 +270,11 @@ class Param(QObject):
             return (self.full_address, state)
         if recursive:
             bundle = self.osc.createBundle()
-            print bundle
             self.osc.appendToBundle(bundle, self.full_address, state)
             for p in self.queryList("Param"):
                 k = p.send_to_osc(False, True)
                 self.osc.appendToBundle(bundle, k[0], k[1])
             self.osc.sendBundle(bundle, self.osc_host, self.osc_port)
-            print bundle
             return
         self.oscSend(self.full_address, state, self.osc_host, self.osc_port)
 ##        if OSCDEBUG:
@@ -302,6 +298,14 @@ class Param(QObject):
         
         fi = (float, int)
         return self.type is p.type or (self.type in fi and p.type in fi)
+    
+    def copy_from(self, o):
+        if self.typecheck(o):
+            if self.type is list:
+                self.state[0] = copy.deepcopy(o.state[0])
+            else:
+                self.state[0] = self.within(o.state[0])
+        self.emit(PYSIGNAL("paramUpdate"), (self.UpdateState,))
         
     def check_connection(self, o):
         """Looking for feedback loops in param connections
@@ -354,7 +358,7 @@ class Param(QObject):
     def set_save_address(self, add=None, updatechildren = True):
         """Update or set the current preset save address.
         
-        The save address is the path in the xml preset file. It's most
+        The save address is the path in the preset file. It's most
         often the same as the (OSC) address, but sometimes you want many
         instances of the same class to share presets. Then you can set them
         to share the save address, and everything will be wonderful.
@@ -845,7 +849,11 @@ class ParamLabel(QLabel):
             return
         try:
             if self.param.type is list:
-                s = self.param.get_state()[0]
+                try:
+                    #FIXME: this is a bit silly. List label != list[0]
+                    s = self.param.get_state()[0]
+                except IndexError:
+                    s = ''
             else:
                 s = self.param.get_state()
             self.setText(str(s))
@@ -980,7 +988,7 @@ class PresetComboBox(QHBox):
             self.my_hide()
         else:
             e.ignore()
-            
+    
         
 class SnapButton(QPushButton):
     """Special instance of QPushButton w/ some gui tricks adapted for use with SnapButtonGroup"""
@@ -1065,10 +1073,13 @@ class PopupLabel(QLabel):
         self.setPaletteForegroundColor(QColor(Qt.white))
         self.setFixedHeight(20)
         self.setAlignment(Qt.AlignRight)
+        self.setAcceptDrops(1)
         
         self.lmb = 0
         self.rmb = 0
         self.gesture_done = 1
+
+        self.dragging = False
         
     def mousePressEvent(self, e):
         """Activate (show canvas) on label middle-click"""
@@ -1080,7 +1091,9 @@ class PopupLabel(QLabel):
         elif e.button() == 2:
             self.rmb = 1
         elif e.button() == 4:
-            pass
+            self.root_param = self.parent().root_param
+            self.dragging = True
+
     def mouseReleaseEvent(self, e):
         if e.button() == 1:
             self.lmb = 0
@@ -1094,6 +1107,9 @@ class PopupLabel(QLabel):
             else:
                 self.parent().preset_menu.hide()
                 
+        if e.button() == 4:
+            print e
+            self.dragging = False
 ##            try:
 ##                self.parent().routing_menu.popup(QCursor.pos())
 ##            except AttributeError:
@@ -1122,6 +1138,30 @@ class PopupLabel(QLabel):
         
     def deactivate(self):
         self.setPaletteBackgroundColor(QColor(100, 50, 0))
+
+    def mouseMoveEvent(self, ev):
+        p = self.parent()
+        if self.dragging :
+            d = QTextDrag(self.root_param.full_address, self)
+            d.dragCopy()
+            self.dragging = False
+
+    def dragEnterEvent(self, ev):
+        try:
+            ev.source().root_param
+        except AttributeError:
+            pass
+        else:
+            ev.accept()
+
+    def dragLeaveEvent(self, ev):
+        pass
+        #self.highlight(0)
+        
+    def dropEvent(self, ev):
+        if ev.source() is not self:
+            self.parent().copy_from(ev.source().parent())
+            
         
         
 class MiniMachine(QVBox):
@@ -1301,6 +1341,11 @@ class MiniMachine(QVBox):
         except IndexError, KeyError:
             pass
         self.emit(PYSIGNAL("snapshot_loaded"), ())
+
+    def copy_from(self, obj):
+        for o in obj.root_param.queryList("Param"):
+            [p.copy_from(o) for p in self.root_param.queryList("Param") if p.address is o.address]
+        self.update_controls()
 
     def update_controls(self):
         pass
@@ -2040,34 +2085,20 @@ class ParamRouting(QVBox):
     
 def popup():
     prp.popup(QCursor.pos())
-
+    
+class Keytest(QHBox):
+    def __init__(self, *args):
+        QHBox.__init__(self, *args)
+    
+    def keyPressEvent(self, e):
+        print e.key()
+    
 if __name__ == "__main__":
     a = QApplication(sys.argv)
     font = QFont("Inconsolata", 10)
     a.setFont(font)
-    w = QHBox()
-    QObject.connect(a,SIGNAL("lastWindowClosed()"),a,SLOT("quit()"))
-    b = QVBox(None)
-    w = RoutingView(4, b)
-    z = MiniMachine("Flesh", b)
-    y = MiniMachine("Flesh2", b)
+    w = Keytest()
     
-    for i in range(5):
-        p = Param(address="/test%d" % i)
-        pr = ParamProgress(p, y)
-        y.root_param.insertChild(p)
-        for i in range(5):
-            pp = Param(address="/test%d" % i)
-            p.insertChild(pp)
-    
-    
-    z.init_controls()
-    
-    sa = SaveSelector(None, b)
-    sa.show(y.root_param)
-    
-    y.init_controls()
-    
-    a.setMainWidget(b)
-    b.show()
+    a.setMainWidget(w)
+    w.show()
     a.exec_loop()
