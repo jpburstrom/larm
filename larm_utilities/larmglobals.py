@@ -7,29 +7,55 @@ import sys
 from os import path
 #from xmlsave import XmlSaving
 
+gl = {
+    "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s2-lomem.pd"]), #file to launch
+    "polltime" : 0.04, #ms, how often mouse gets polled
+    "mouse_resolution" : 3000, #some kind of resolution factor, larger = slower
+    "osc_address" : "127.0.0.1", 
+    "osc_port" : 9000, #port for sending osc msgs
+    "osc_listen_port" : 9001, #port for receiving osc
+    "mouse_device" : "/dev/input/event101", #path to mouse device. you may need r/w permissions...
+    "audiodb_path" : 'audiodb/data.db', #relative (to script) or absolute path to audiofile db
+    "samplerate" : 48000, #samplerate of backend, needed to calculate rec buffer labels 
+    "txtfile" : path.expanduser("~/.larm/notes.txt"), #file with notes
+    "preset_file" : path.expanduser('~/.larm/presets.py'),
+    "accordion_mode" : 0
+}
+
+settings_file = path.expanduser('~/.larm/larmrc')
+
+def generate_settings():
+    try:
+        f = open(settings_file, "w")
+    except IOError:
+        print "Couldn't open settings file"
+    else:
+        f.write("#This is python code. Make sure you keep it readable.\n")
+        f.write(repr(gl).replace(",",",\n").replace("{", "{\n"))
+        f.close()
+
+try:
+    f = open(settings_file, "r")
+except IOError:
+    generate_settings()    
+else:
+    settings = f.read()
+    f.close()
+    try:
+        ggl = eval(settings)
+    except:
+        print "Couldn't read larmrc"
+    else:
+        gl.update(ggl)
+
 def getgl(key):
     """Get basic settings for the program
     
     Instead of relying on a complex xml or qt setting setup, 
     this is an oldschool python dictionary serving basic settings.
     
-    Arg: dict key"""
+    Arg: dict key"""    
     
-    gl = {
-        "pdcommand" : "".join([sys.path[0],  "/backend/immer2-back-s2-lomem.pd"]), #file to launch
-        "polltime" : 0.04, #ms, how often mouse gets polled
-        "mouse_resolution" : 3000, #some kind of resolution factor, larger = slower
-        "osc_address" : "127.0.0.1", 
-        "osc_port" : 9000, #port for sending osc msgs
-        "osc_listen_port" : 9001, #port for receiving osc
-        "mouse_device" : "/dev/input/event101", #path to mouse device. you may need r/w permissions...
-        "audiodb_path" : 'audiodb/data.db', #relative (to script) or absolute path to audiofile db
-        "samplerate" : 48000, #samplerate of backend, needed to calculate rec buffer labels 
-        "txtfile" : path.expanduser("~/.larm/notes.txt"), #file with notes
-        "preset_file" : path.expanduser('~/.larm/presets.py'),
-        "accordion_mode" : 2
-        }
-
     return gl[key]
     
 def get_keyboard(caller):

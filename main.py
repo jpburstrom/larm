@@ -1400,7 +1400,12 @@ class RealPollingThread(QThread):
         self.activeMachines = set()
         QObject.connect(qApp, PYSIGNAL("addRemoveMachine"), 
             self.set_machine_active)
-        self.d = MyDevice(getgl("mouse_device"))
+        try:
+            self.d = MyDevice(getgl("mouse_device"))
+        except OSError:
+            QMessageBox.critical(None, "Larm", 
+                "Couldn't find mouse. Please close Larm, check your settings and return. \n(Current set path:  %s)" % getgl("mouse_device"))
+            exit()
         
     def set_canvas_active(self, boo):
         self.active = boo;

@@ -22,12 +22,12 @@
 import sys, os
 from subprocess import *
 
-f = open("%s/larm.log" % sys.path[0], "w")
-
 cmd = "".join(["nice -n15 ", sys.path[0], "/main.py "])
 try:
-    p = Popen(cmd, stdout=f, stderr=f, env = os.environ, shell=True)
-    p.wait()
-except Exception,e:
-    f.append(e)
-    print e
+    retcode = call(cmd, shell=True)
+    if retcode < 0:
+        print >>sys.stderr, "Child was terminated by signal", -retcode
+    else:
+        print >>sys.stderr, "Child returned", retcode
+except OSError, e:
+    print >>sys.stderr, "Execution failed:", e
